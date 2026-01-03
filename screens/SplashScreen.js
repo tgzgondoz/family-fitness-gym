@@ -10,9 +10,9 @@ import {
   TouchableOpacity,
   Animated,
   Easing,
-  Platform,
-  SafeAreaView
+  Platform
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width, height } = Dimensions.get('window');
 
@@ -45,13 +45,7 @@ const SplashScreen = ({ navigation }) => {
   }, []);
 
   const handleGetStarted = () => {
-    Animated.timing(fadeAnim, {
-      toValue: 0,
-      duration: 250,
-      useNativeDriver: true,
-    }).start(() => {
-      navigation.replace('Login');
-    });
+    navigation.navigate('Login');
   };
 
   const buttonScale = useRef(new Animated.Value(1)).current;
@@ -73,7 +67,7 @@ const SplashScreen = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <StatusBar 
         barStyle="light-content" 
         backgroundColor="#141f23" 
@@ -98,7 +92,7 @@ const SplashScreen = ({ navigation }) => {
           ]}
         >
           <Image 
-            source={require('../assets/logo.png')}
+            source={require('../assets/logo.png')}  // Adjusted path
             style={styles.logoImage}
             resizeMode="contain"
           />
@@ -131,7 +125,7 @@ const SplashScreen = ({ navigation }) => {
           
           <TouchableOpacity 
             style={styles.signInButton}
-            onPress={() => navigation.replace('Login')}
+            onPress={() => navigation.navigate('Login')}
             activeOpacity={0.7}
           >
             <Text style={styles.signInText}>
@@ -155,13 +149,13 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingTop: Platform.OS === 'ios' ? 40 : 30,
-    paddingBottom: Platform.OS === 'ios' ? 30 : 20,
+    paddingTop: 20,
+    paddingBottom: 20,
   },
   logoContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: Platform.OS === 'ios' ? 60 : 40,
+    marginTop: 40,
   },
   logoImage: {
     width: 100,

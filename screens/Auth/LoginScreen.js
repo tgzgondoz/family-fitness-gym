@@ -1,4 +1,4 @@
-// screens/Auth/LoginScreen.js
+// screens/Auth/LoginScreen.js (Updated version)
 import React, { useRef, useState } from 'react';
 import { 
   View, 
@@ -83,24 +83,6 @@ const LoginScreen = ({ navigation }) => {
     setIsFocused(prev => ({ ...prev, [field]: false }));
   };
 
-  // Quick fill for demo users
-  const fillDemoCredentials = (userType) => {
-    switch(userType) {
-      case 'admin':
-        setEmail('shumba');
-        setPassword('familyfitness26');
-        break;
-      case 'staff':
-        setEmail('staff@familyfitness.com');
-        setPassword('password123');
-        break;
-      case 'client':
-        setEmail('client@familyfitness.com');
-        setPassword('password123');
-        break;
-    }
-  };
-
   return (
     <SafeAreaView style={styles.safeArea}>
       <KeyboardAvoidingView 
@@ -122,10 +104,11 @@ const LoginScreen = ({ navigation }) => {
               }
             ]}
           >
-            {/* Back Button */}
+            {/* Back Button - REMOVED or DISABLED since Splash screen might not be in stack */}
+            {/* If you want to keep back navigation, use goBack() instead */}
             <TouchableOpacity 
               style={styles.backButton}
-              onPress={() => navigation.navigate('Splash')}
+              onPress={() => navigation.goBack()}  // Changed from navigate('Splash') to goBack()
               activeOpacity={0.7}
             >
               <Ionicons 
@@ -168,7 +151,7 @@ const LoginScreen = ({ navigation }) => {
                   />
                   <TextInput
                     style={styles.input}
-                    placeholder="Enter your email or 'shumba' for admin"
+                    placeholder="Enter your email or username"
                     placeholderTextColor="#8a9a9f"
                     value={email}
                     onChangeText={setEmail}
@@ -248,39 +231,6 @@ const LoginScreen = ({ navigation }) => {
                   <Text style={styles.loginButtonText}>Sign In</Text>
                 )}
               </TouchableOpacity>
-
-              {/* Quick Login Demo Buttons */}
-              <View style={styles.demoContainer}>
-                <Text style={styles.demoTitle}>Quick Login (Demo):</Text>
-                <View style={styles.demoButtons}>
-                  <TouchableOpacity 
-                    style={[styles.demoButton, styles.adminButton]}
-                    onPress={() => fillDemoCredentials('admin')}
-                    disabled={isLoading}
-                  >
-                    <Ionicons name="shield-outline" size={16} color="#f2faea" />
-                    <Text style={styles.demoButtonText}>Admin</Text>
-                  </TouchableOpacity>
-                  
-                  <TouchableOpacity 
-                    style={[styles.demoButton, styles.staffButton]}
-                    onPress={() => fillDemoCredentials('staff')}
-                    disabled={isLoading}
-                  >
-                    <Ionicons name="people-outline" size={16} color="#f2faea" />
-                    <Text style={styles.demoButtonText}>Staff</Text>
-                  </TouchableOpacity>
-                  
-                  <TouchableOpacity 
-                    style={[styles.demoButton, styles.clientButton]}
-                    onPress={() => fillDemoCredentials('client')}
-                    disabled={isLoading}
-                  >
-                    <Ionicons name="person-outline" size={16} color="#f2faea" />
-                    <Text style={styles.demoButtonText}>Client</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
 
               {/* Divider */}
               <View style={styles.dividerContainer}>
@@ -458,51 +408,6 @@ const styles = StyleSheet.create({
     fontWeight: Platform.OS === 'ios' ? '700' : 'bold',
     color: '#141f23',
     fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif-medium',
-  },
-  demoContainer: {
-    marginBottom: 24,
-  },
-  demoTitle: {
-    fontSize: 14,
-    color: '#8a9a9f',
-    marginBottom: 12,
-    textAlign: 'center',
-    fontWeight: Platform.OS === 'ios' ? '500' : '601',
-    fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
-  },
-  demoButtons: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 8,
-  },
-  demoButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 20,
-    gap: 6,
-  },
-  adminButton: {
-    backgroundColor: 'rgba(89, 203, 1, 0.2)',
-    borderWidth: 1,
-    borderColor: 'rgba(89, 203, 1, 0.3)',
-  },
-  staffButton: {
-    backgroundColor: 'rgba(0, 122, 255, 0.2)',
-    borderWidth: 1,
-    borderColor: 'rgba(0, 122, 255, 0.3)',
-  },
-  clientButton: {
-    backgroundColor: 'rgba(255, 45, 85, 0.2)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 45, 85, 0.3)',
-  },
-  demoButtonText: {
-    fontSize: 14,
-    fontWeight: Platform.OS === 'ios' ? '600' : 'bold',
-    color: '#f2faea',
-    fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
   },
   dividerContainer: {
     flexDirection: 'row',
