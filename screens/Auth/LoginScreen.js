@@ -467,7 +467,7 @@ const styles = StyleSheet.create({
     color: '#8a9a9f',
     marginBottom: 12,
     textAlign: 'center',
-    fontWeight: Platform.OS === 'ios' ? '500' : '600',
+    fontWeight: Platform.OS === 'ios' ? '500' : '601',
     fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
   },
   demoButtons: {
