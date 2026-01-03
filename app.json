@@ -1,38 +1,38 @@
 {
   "expo": {
-    "name": "Family Fitness Gym",
-    "slug": "family-fitness-gym",
+    "name": "FamilyFitnessGYM",
+    "slug": "FamilyFitnessGYM",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "dark",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#1a1a1a"
+      "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
     "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.familyfitness.gym"
+      "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#1a1a1a"
+        "backgroundColor": "#ffffff"
       },
-      "package": "com.familyfitness.gym"
+      "edgeToEdgeEnabled": true
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-secure-store",
-      "expo-notifications"
+      "expo-asset"
     ],
     "extra": {
       "eas": {
-        "projectId": "your-project-id"
+        "projectId": "3597b60a-5e84-447b-891b-d0e0102bc4f4"
       }
-    }
+    },
+    "owner": "gashie22"
   }
 }
