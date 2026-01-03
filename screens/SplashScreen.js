@@ -6,68 +6,42 @@ import {
   StyleSheet, 
   Dimensions, 
   StatusBar, 
-  Image, 
-  TouchableOpacity,
-  Animated,
-  Easing,
-  Platform
+  Image,
+  Animated
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width, height } = Dimensions.get('window');
 
 const SplashScreen = ({ navigation }) => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(20)).current;
-  const scaleAnim = useRef(new Animated.Value(0.95)).current;
+  const scaleAnim = useRef(new Animated.Value(0.8)).current;
 
   useEffect(() => {
+    // Fade in and scale up animation
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
-        duration: 600,
-        easing: Easing.out(Easing.cubic),
-        useNativeDriver: true,
-      }),
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 600,
-        easing: Easing.out(Easing.cubic),
+        duration: 800,
         useNativeDriver: true,
       }),
       Animated.spring(scaleAnim, {
         toValue: 1,
+        tension: 100,
         friction: 7,
-        tension: 40,
         useNativeDriver: true,
       })
     ]).start();
+
+    // Navigate after delay
+    const timer = setTimeout(() => {
+      navigation.navigate('DashboardScreen');
+    }, 2000); // 2 second delay
+
+    return () => clearTimeout(timer);
   }, []);
 
-  const handleGetStarted = () => {
-    navigation.navigate('Login');
-  };
-
-  const buttonScale = useRef(new Animated.Value(1)).current;
-
-  const buttonPressIn = () => {
-    Animated.spring(buttonScale, {
-      toValue: 0.97,
-      useNativeDriver: true,
-    }).start();
-  };
-
-  const buttonPressOut = () => {
-    Animated.spring(buttonScale, {
-      toValue: 1,
-      friction: 4,
-      tension: 40,
-      useNativeDriver: true,
-    }).start();
-  };
-
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+    <View style={styles.container}>
       <StatusBar 
         barStyle="light-content" 
         backgroundColor="#141f23" 
@@ -75,67 +49,24 @@ const SplashScreen = ({ navigation }) => {
       
       <Animated.View 
         style={[
-          styles.content,
+          styles.logoContainer,
           {
             opacity: fadeAnim,
-            transform: [{ translateY: slideAnim }]
+            transform: [{ scale: scaleAnim }]
           }
         ]}
       >
-        {/* Logo */}
-        <Animated.View 
-          style={[
-            styles.logoContainer,
-            {
-              transform: [{ scale: scaleAnim }]
-            }
-          ]}
-        >
-          <Image 
-            source={require('../assets/logo.png')}  // Adjusted path
-            style={styles.logoImage}
-            resizeMode="contain"
-          />
-        </Animated.View>
-
-        {/* App Name and Tagline */}
-        <View style={styles.textContainer}>
-          <Text style={styles.appName}>GYM</Text>
-          <View style={styles.divider} />
-          <Text style={styles.tagline}>Transform Your Potential</Text>
-          <Text style={styles.subTagline}>Every rep counts</Text>
-        </View>
-
-        {/* Spacer */}
-        <View style={styles.spacer} />
-
-        {/* Action Buttons */}
-        <View style={styles.buttonContainer}>
-          <Animated.View style={{ transform: [{ scale: buttonScale }] }}>
-            <TouchableOpacity 
-              style={styles.getStartedButton}
-              onPress={handleGetStarted}
-              onPressIn={buttonPressIn}
-              onPressOut={buttonPressOut}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.buttonText}>Get Started</Text>
-            </TouchableOpacity>
-          </Animated.View>
-          
-          <TouchableOpacity 
-            style={styles.signInButton}
-            onPress={() => navigation.navigate('Login')}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.signInText}>
-              Already have an account?{' '}
-              <Text style={styles.signInLink}>Sign In</Text>
-            </Text>
-          </TouchableOpacity>
-        </View>
+        <Image 
+          source={require('../assets/logo.png')}
+          style={styles.logoImage}
+          resizeMode="contain"
+        />
       </Animated.View>
-    </SafeAreaView>
+
+      <View style={styles.loadingContainer}>
+        <Text style={styles.loadingText}>Loading...</Text>
+      </View>
+    </View>
   );
 };
 
@@ -143,89 +74,26 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#141f23',
-  },
-  content: {
-    flex: 1,
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 20,
   },
   logoContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 40,
+    marginBottom: 40,
   },
   logoImage: {
-    width: 100,
-    height: 100,
+    width: 120,
+    height: 120,
     tintColor: '#f2faea',
   },
-  textContainer: {
-    alignItems: 'center',
-    marginTop: 30,
-  },
-  appName: {
-    fontSize: 36,
-    fontWeight: Platform.OS === 'ios' ? '800' : 'bold',
-    color: '#f2faea',
-    letterSpacing: 1.5,
-    marginBottom: 12,
-  },
-  divider: {
-    width: 60,
-    height: 3,
-    backgroundColor: '#59cb01',
-    borderRadius: 2,
-    marginBottom: 16,
-  },
-  tagline: {
-    fontSize: 16,
-    color: '#f2faea',
-    fontWeight: Platform.OS === 'ios' ? '500' : '600',
-    marginBottom: 6,
-  },
-  subTagline: {
-    fontSize: 14,
-    color: 'rgba(242, 250, 234, 0.7)',
-    fontWeight: Platform.OS === 'ios' ? '300' : 'normal',
-  },
-  spacer: {
-    flex: 1,
-  },
-  buttonContainer: {
-    width: '100%',
-    alignItems: 'center',
-  },
-  getStartedButton: {
-    backgroundColor: '#59cb01',
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-    borderRadius: 12,
-    width: '100%',
-    maxWidth: 260,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  buttonText: {
-    fontSize: 17,
-    fontWeight: Platform.OS === 'ios' ? '600' : 'bold',
-    color: '#141f23',
-  },
-  signInButton: {
+  loadingContainer: {
     marginTop: 20,
-    padding: 12,
   },
-  signInText: {
-    fontSize: 15,
+  loadingText: {
+    fontSize: 16,
     color: 'rgba(242, 250, 234, 0.8)',
-    textAlign: 'center',
-    fontWeight: Platform.OS === 'ios' ? '400' : 'normal',
-  },
-  signInLink: {
-    color: '#59cb01',
-    fontWeight: Platform.OS === 'ios' ? '600' : 'bold',
+    fontWeight: '300',
   },
 });
 

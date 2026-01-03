@@ -1,4 +1,4 @@
-// screens/Auth/LoginScreen.js (Updated version)
+// screens/Auth/LoginScreen.js
 import React, { useRef, useState } from 'react';
 import { 
   View, 
@@ -7,9 +7,6 @@ import {
   TouchableOpacity, 
   StyleSheet, 
   Dimensions,
-  Animated,
-  Easing,
-  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -20,7 +17,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
 
-const { width, height } = Dimensions.get('window');
+const { height } = Dimensions.get('window');
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
@@ -29,27 +26,7 @@ const LoginScreen = ({ navigation }) => {
   const [isFocused, setIsFocused] = useState({ email: false, password: false });
   const [isLoading, setIsLoading] = useState(false);
   
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(30)).current;
-  
   const { login } = useAuth();
-
-  React.useEffect(() => {
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 600,
-        easing: Easing.out(Easing.cubic),
-        useNativeDriver: true,
-      }),
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 600,
-        easing: Easing.out(Easing.cubic),
-        useNativeDriver: true,
-      })
-    ]).start();
-  }, []);
 
   const handleLogin = async () => {
     if (!email.trim()) {
@@ -95,37 +72,12 @@ const LoginScreen = ({ navigation }) => {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          <Animated.View 
-            style={[
-              styles.content,
-              {
-                opacity: fadeAnim,
-                transform: [{ translateY: slideAnim }]
-              }
-            ]}
-          >
-            {/* Back Button - REMOVED or DISABLED since Splash screen might not be in stack */}
-            {/* If you want to keep back navigation, use goBack() instead */}
-            <TouchableOpacity 
-              style={styles.backButton}
-              onPress={() => navigation.goBack()}  // Changed from navigate('Splash') to goBack()
-              activeOpacity={0.7}
-            >
-              <Ionicons 
-                name="chevron-back" 
-                size={24} 
-                color="#f2faea" 
-                style={{ opacity: 0.9 }}
-              />
-            </TouchableOpacity>
-
+          <View style={styles.content}>
             {/* Logo */}
             <View style={styles.logoContainer}>
-              <Image 
-                source={require('../../assets/logo.png')}
-                style={styles.logoImage}
-                resizeMode="contain"
-              />
+              <View style={styles.logoCircle}>
+                <Ionicons name="barbell-outline" size={40} color="#f2faea" />
+              </View>
             </View>
 
             {/* Header */}
@@ -232,24 +184,6 @@ const LoginScreen = ({ navigation }) => {
                 )}
               </TouchableOpacity>
 
-              {/* Divider */}
-              <View style={styles.dividerContainer}>
-                <View style={styles.dividerLine} />
-                <Text style={styles.dividerText}>or continue with</Text>
-                <View style={styles.dividerLine} />
-              </View>
-
-              {/* Social Login (Optional) */}
-              <View style={styles.socialContainer}>
-                <TouchableOpacity style={styles.socialButton} disabled={isLoading}>
-                  <Ionicons name="logo-apple" size={20} color="#f2faea" />
-                </TouchableOpacity>
-                
-                <TouchableOpacity style={styles.socialButton} disabled={isLoading}>
-                  <Ionicons name="logo-google" size={20} color="#f2faea" />
-                </TouchableOpacity>
-              </View>
-
               {/* Sign Up Link */}
               <View style={styles.signupContainer}>
                 <Text style={styles.signupText}>Don't have an account? </Text>
@@ -262,7 +196,7 @@ const LoginScreen = ({ navigation }) => {
                 </TouchableOpacity>
               </View>
             </View>
-          </Animated.View>
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -280,69 +214,57 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
+    justifyContent: 'center',
   },
   content: {
     flex: 1,
-    paddingHorizontal: 20,
-    paddingTop: Platform.OS === 'ios' ? 8 : 16,
-  },
-  backButton: {
-    position: 'absolute',
-    top: Platform.OS === 'ios' ? 12 : 20,
-    left: 20,
-    zIndex: 10,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
+    paddingHorizontal: 24,
     justifyContent: 'center',
-    backgroundColor: 'rgba(242, 250, 234, 0.1)',
   },
   logoContainer: {
     alignItems: 'center',
-    marginTop: height * 0.08,
-    marginBottom: 40,
+    marginBottom: 30,
+    marginTop: 20,
   },
-  logoImage: {
-    width: 100,
-    height: 100,
-    tintColor: '#f2faea',
+  logoCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: 'rgba(89, 203, 1, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(89, 203, 1, 0.3)',
   },
   headerContainer: {
     alignItems: 'center',
-    marginBottom: 40,
+    marginBottom: 30,
   },
   title: {
-    fontSize: 32,
-    fontWeight: Platform.OS === 'ios' ? '800' : 'bold',
+    fontSize: 28,
+    fontWeight: 'bold',
     color: '#f2faea',
-    letterSpacing: -0.5,
     marginBottom: 8,
-    fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
     textAlign: 'center',
   },
   subtitle: {
     fontSize: 16,
     color: '#8a9a9f',
     textAlign: 'center',
-    fontWeight: Platform.OS === 'ios' ? '400' : 'normal',
     lineHeight: 22,
-    paddingHorizontal: 20,
-    fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
   },
   formContainer: {
     width: '100%',
   },
   inputWrapper: {
-    marginBottom: 24,
+    marginBottom: 20,
   },
   inputLabel: {
     fontSize: 14,
     color: '#f2faea',
-    fontWeight: Platform.OS === 'ios' ? '600' : 'bold',
+    fontWeight: '600',
     marginBottom: 8,
     opacity: 0.9,
-    fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif-medium',
   },
   inputContainer: {
     flexDirection: 'row',
@@ -350,9 +272,9 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(242, 250, 234, 0.05)',
     borderWidth: 1,
     borderColor: 'rgba(242, 250, 234, 0.1)',
-    borderRadius: Platform.OS === 'ios' ? 12 : 10,
+    borderRadius: 10,
     paddingHorizontal: 16,
-    height: 56,
+    height: 52,
   },
   inputContainerFocused: {
     borderColor: '#59cb01',
@@ -363,11 +285,9 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    fontSize: 17,
+    fontSize: 16,
     color: '#f2faea',
-    fontWeight: Platform.OS === 'ios' ? '400' : 'normal',
     paddingVertical: 0,
-    fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
   },
   eyeIcon: {
     padding: 8,
@@ -378,87 +298,41 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   forgotPasswordText: {
-    fontSize: 15,
+    fontSize: 14,
     color: '#59cb01',
-    fontWeight: Platform.OS === 'ios' ? '600' : 'bold',
-    fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif-medium',
+    fontWeight: '600',
   },
   loginButton: {
     backgroundColor: '#59cb01',
     paddingVertical: 16,
-    borderRadius: Platform.OS === 'ios' ? 14 : 12,
-    marginTop: 8,
-    marginBottom: 32,
+    borderRadius: 10,
+    marginTop: 10,
+    marginBottom: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#59cb01',
-    shadowOffset: {
-      width: 0,
-      height: Platform.OS === 'ios' ? 4 : 6,
-    },
-    shadowOpacity: Platform.OS === 'ios' ? 0.3 : 0.4,
-    shadowRadius: Platform.OS === 'ios' ? 12 : 16,
-    elevation: 6,
   },
   loginButtonDisabled: {
     opacity: 0.7,
   },
   loginButtonText: {
-    fontSize: 18,
-    fontWeight: Platform.OS === 'ios' ? '700' : 'bold',
+    fontSize: 16,
+    fontWeight: 'bold',
     color: '#141f23',
-    fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif-medium',
-  },
-  dividerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: 'rgba(242, 250, 234, 0.1)',
-  },
-  dividerText: {
-    fontSize: 14,
-    color: '#8a9a9f',
-    fontWeight: Platform.OS === 'ios' ? '500' : '600',
-    marginHorizontal: 16,
-    fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
-  },
-  socialContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 16,
-    marginBottom: 40,
-  },
-  socialButton: {
-    width: 56,
-    height: 56,
-    borderRadius: Platform.OS === 'ios' ? 28 : 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(242, 250, 234, 0.05)',
-    borderWidth: 1,
-    borderColor: 'rgba(242, 250, 234, 0.1)',
   },
   signupContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingBottom: Platform.OS === 'ios' ? 40 : 24,
+    marginTop: 20,
   },
   signupText: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#8a9a9f',
-    fontWeight: Platform.OS === 'ios' ? '400' : 'normal',
-    fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
   },
   signupLink: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#59cb01',
-    fontWeight: Platform.OS === 'ios' ? '600' : 'bold',
-    fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif-medium',
+    fontWeight: '600',
   },
 });
 
