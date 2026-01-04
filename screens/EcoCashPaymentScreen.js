@@ -6,9 +6,9 @@ import {
   TextInput,
   TouchableOpacity,
   Alert,
-  ScrollView,
   KeyboardAvoidingView,
   Platform,
+  Modal,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
@@ -21,6 +21,7 @@ const EcoCashPaymentScreen = ({ route, navigation }) => {
   const [ecocashNumber, setEcocashNumber] = useState('');
   const [loading, setLoading] = useState(false);
   const [pin, setPin] = useState('');
+  const [showInstructions, setShowInstructions] = useState(false);
 
   const handlePayment = async () => {
     if (!phoneNumber || !ecocashNumber || !pin) {
@@ -36,18 +37,13 @@ const EcoCashPaymentScreen = ({ route, navigation }) => {
     setLoading(true);
 
     try {
-      // Simulate EcoCash payment (in real app, integrate with EcoCash API)
-      // For demo purposes, we'll simulate a successful payment
-      
-      // Generate payment reference
       const paymentReference = `ECOCASH-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-      // Create payment record
       const { data: paymentData, error: paymentError } = await supabase
         .from('payments')
         .insert([{
           user_id: user.id,
-          amount: amount || 50, // Default to monthly if not specified
+          amount: amount || 50,
           payment_method: 'ecocash',
           payment_reference: paymentReference,
           status: 'completed',
@@ -59,7 +55,6 @@ const EcoCashPaymentScreen = ({ route, navigation }) => {
 
       if (paymentError) throw paymentError;
 
-      // Update user subscription
       const endDate = new Date();
       if (subscriptionType === 'daily') {
         endDate.setDate(endDate.getDate() + 1);
@@ -84,7 +79,6 @@ const EcoCashPaymentScreen = ({ route, navigation }) => {
 
       if (subError) throw subError;
 
-      // Update user record
       const { error: userError } = await supabase
         .from('users')
         .update({
@@ -119,115 +113,151 @@ const EcoCashPaymentScreen = ({ route, navigation }) => {
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <View style={styles.header}>
-          <Ionicons name="phone-portrait-outline" size={64} color="#59cb01" />
+      {/* Header - Hidden as requested */}
+      <View style={styles.header}>
+        <TouchableOpacity 
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
+          <Ionicons name="arrow-back" size={24} color="#FFF" />
+        </TouchableOpacity>
+        
+        <View style={styles.headerCenter}>
           <Text style={styles.headerTitle}>EcoCash Payment</Text>
-          <Text style={styles.headerSubtitle}>
-            Pay ${amount || '50'} for {subscriptionType || 'monthly'} subscription
-          </Text>
+        </View>
+        
+        <TouchableOpacity 
+          style={styles.infoButton}
+          onPress={() => setShowInstructions(true)}
+        >
+          <Ionicons name="information-circle-outline" size={24} color="#FFF" />
+        </TouchableOpacity>
+      </View>
+
+      {/* Main Content */}
+      <View style={styles.content}>
+        {/* Amount Display */}
+        <View style={styles.amountContainer}>
+          <Text style={styles.amount}>${amount || '50'}</Text>
+          <Text style={styles.plan}>{subscriptionType || 'monthly'} plan</Text>
         </View>
 
-        <View style={styles.formContainer}>
+        {/* Form */}
+        <View style={styles.form}>
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Your Phone Number</Text>
-            <View style={styles.inputWrapper}>
-              <Ionicons name="call-outline" size={20} color="#666" style={styles.inputIcon} />
-              <TextInput
-                style={styles.input}
-                placeholder="0772 123 456"
-                keyboardType="phone-pad"
-                value={phoneNumber}
-                onChangeText={setPhoneNumber}
-                maxLength={10}
-              />
-            </View>
+            <TextInput
+              style={styles.input}
+              placeholder="Phone Number"
+              placeholderTextColor="#8a9a9f"
+              keyboardType="phone-pad"
+              value={phoneNumber}
+              onChangeText={setPhoneNumber}
+              maxLength={10}
+            />
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>EcoCash Number</Text>
-            <View style={styles.inputWrapper}>
-              <Ionicons name="wallet-outline" size={20} color="#666" style={styles.inputIcon} />
-              <TextInput
-                style={styles.input}
-                placeholder="0778 987 654"
-                keyboardType="phone-pad"
-                value={ecocashNumber}
-                onChangeText={setEcocashNumber}
-                maxLength={10}
-              />
-            </View>
+            <TextInput
+              style={styles.input}
+              placeholder="EcoCash Number"
+              placeholderTextColor="#8a9a9f"
+              keyboardType="phone-pad"
+              value={ecocashNumber}
+              onChangeText={setEcocashNumber}
+              maxLength={10}
+            />
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>EcoCash PIN</Text>
-            <View style={styles.inputWrapper}>
-              <Ionicons name="lock-closed-outline" size={20} color="#666" style={styles.inputIcon} />
-              <TextInput
-                style={styles.input}
-                placeholder="Enter 4-digit PIN"
-                keyboardType="number-pad"
-                secureTextEntry
-                value={pin}
-                onChangeText={setPin}
-                maxLength={4}
-              />
-            </View>
-            <Text style={styles.hintText}>Enter your EcoCash mobile money PIN</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="PIN"
+              placeholderTextColor="#8a9a9f"
+              keyboardType="number-pad"
+              secureTextEntry
+              value={pin}
+              onChangeText={setPin}
+              maxLength={4}
+            />
           </View>
 
-          <View style={styles.amountCard}>
-            <Text style={styles.amountLabel}>Amount to Pay</Text>
-            <Text style={styles.amountValue}>${amount || '50.00'}</Text>
-          </View>
-
+          {/* Confirm Payment Button */}
           <TouchableOpacity
-            style={styles.payButton}
+            style={[styles.payButton, loading && styles.payButtonDisabled]}
             onPress={handlePayment}
             disabled={loading}
           >
-            {loading ? (
-              <Text style={styles.payButtonText}>Processing...</Text>
-            ) : (
-              <>
-                <Ionicons name="checkmark-circle" size={24} color="#fff" />
-                <Text style={styles.payButtonText}>Confirm Payment</Text>
-              </>
-            )}
-          </TouchableOpacity>
-
-          <View style={styles.securityNote}>
-            <Ionicons name="shield-checkmark-outline" size={20} color="#4CAF50" />
-            <Text style={styles.securityText}>
-              Your payment is secure. We never store your PIN.
+            <Text style={styles.payButtonText}>
+              {loading ? 'Processing...' : 'Confirm Payment'}
             </Text>
-          </View>
+          </TouchableOpacity>
+        </View>
 
-          <View style={styles.stepsContainer}>
-            <Text style={styles.stepsTitle}>Payment Steps:</Text>
-            <View style={styles.step}>
-              <Text style={styles.stepNumber}>1</Text>
-              <Text style={styles.stepText}>Dial *151# on your EcoCash line</Text>
+        {/* Nothing after the button - all text removed as requested */}
+      </View>
+
+      {/* Instructions Modal */}
+      <Modal
+        visible={showInstructions}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowInstructions(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>How to Pay</Text>
+              <TouchableOpacity onPress={() => setShowInstructions(false)}>
+                <Ionicons name="close" size={24} color="#FFF" />
+              </TouchableOpacity>
             </View>
-            <View style={styles.step}>
-              <Text style={styles.stepNumber}>2</Text>
-              <Text style={styles.stepText}>Select "Send Money"</Text>
+            
+            <View style={styles.modalBody}>
+              <View style={styles.instructionStep}>
+                <View style={styles.stepNumber}>
+                  <Text style={styles.stepNumberText}>1</Text>
+                </View>
+                <Text style={styles.stepText}>Dial *151# on EcoCash line</Text>
+              </View>
+              
+              <View style={styles.instructionStep}>
+                <View style={styles.stepNumber}>
+                  <Text style={styles.stepNumberText}>2</Text>
+                </View>
+                <Text style={styles.stepText}>Select "Send Money"</Text>
+              </View>
+              
+              <View style={styles.instructionStep}>
+                <View style={styles.stepNumber}>
+                  <Text style={styles.stepNumberText}>3</Text>
+                </View>
+                <Text style={styles.stepText}>Merchant: 0773 456 789</Text>
+              </View>
+              
+              <View style={styles.instructionStep}>
+                <View style={styles.stepNumber}>
+                  <Text style={styles.stepNumberText}>4</Text>
+                </View>
+                <Text style={styles.stepText}>Amount: ${amount || '50'}</Text>
+              </View>
+              
+              <View style={styles.instructionStep}>
+                <View style={styles.stepNumber}>
+                  <Text style={styles.stepNumberText}>5</Text>
+                </View>
+                <Text style={styles.stepText}>Reference: FAMILYFITNESS</Text>
+              </View>
             </View>
-            <View style={styles.step}>
-              <Text style={styles.stepNumber}>3</Text>
-              <Text style={styles.stepText}>Enter our merchant number: 0773 456 789</Text>
-            </View>
-            <View style={styles.step}>
-              <Text style={styles.stepNumber}>4</Text>
-              <Text style={styles.stepText}>Enter amount: ${amount || '50'}</Text>
-            </View>
-            <View style={styles.step}>
-              <Text style={styles.stepNumber}>5</Text>
-              <Text style={styles.stepText}>Enter reference: FAMILYFITNESS</Text>
-            </View>
+            
+            <TouchableOpacity 
+              style={styles.modalCloseButton}
+              onPress={() => setShowInstructions(false)}
+            >
+              <Text style={styles.modalCloseText}>Close</Text>
+            </TouchableOpacity>
           </View>
         </View>
-      </ScrollView>
+      </Modal>
     </KeyboardAvoidingView>
   );
 };
@@ -235,140 +265,145 @@ const EcoCashPaymentScreen = ({ route, navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
-  scrollContainer: {
-    flexGrow: 1,
-    paddingBottom: 40,
+    backgroundColor: '#f2faea',
   },
   header: {
-    alignItems: 'center',
-    padding: 30,
     backgroundColor: '#141f23',
+    paddingTop: 50,
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  backButton: {
+    padding: 8,
+  },
+  headerCenter: {
+    flex: 1,
+    alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 28,
+    fontSize: 18,
     fontWeight: 'bold',
-    color: '#fff',
-    marginTop: 16,
+    color: '#FFF',
   },
-  headerSubtitle: {
+  infoButton: {
+    padding: 8,
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingTop: 40,
+  },
+  amountContainer: {
+    alignItems: 'center',
+    marginBottom: 40,
+  },
+  amount: {
+    fontSize: 48,
+    fontWeight: 'bold',
+    color: '#141f23',
+    marginBottom: 8,
+  },
+  plan: {
     fontSize: 16,
-    color: '#ccc',
-    marginTop: 8,
+    color: '#8a9a9f',
   },
-  formContainer: {
-    padding: 20,
+  form: {
+    flex: 1,
   },
   inputGroup: {
     marginBottom: 20,
   },
-  label: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 8,
-  },
-  inputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    paddingHorizontal: 15,
-  },
-  inputIcon: {
-    marginRight: 10,
-  },
   input: {
-    flex: 1,
-    paddingVertical: 15,
-    fontSize: 16,
-    color: '#333',
-  },
-  hintText: {
-    fontSize: 12,
-    color: '#666',
-    marginTop: 6,
-    fontStyle: 'italic',
-  },
-  amountCard: {
-    backgroundColor: '#fff',
-    padding: 20,
+    backgroundColor: '#FFF',
     borderRadius: 12,
-    borderWidth: 2,
-    borderColor: '#59cb01',
-    marginVertical: 20,
-    alignItems: 'center',
-  },
-  amountLabel: {
+    paddingHorizontal: 20,
+    paddingVertical: 18,
     fontSize: 16,
-    color: '#666',
-    marginBottom: 8,
-  },
-  amountValue: {
-    fontSize: 36,
-    fontWeight: 'bold',
-    color: '#59cb01',
+    color: '#141f23',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
   },
   payButton: {
     backgroundColor: '#59cb01',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 18,
+    paddingVertical: 18,
     borderRadius: 12,
-    marginBottom: 20,
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  payButtonDisabled: {
+    opacity: 0.7,
   },
   payButtonText: {
-    color: '#fff',
+    color: '#141f23',
     fontSize: 18,
     fontWeight: 'bold',
-    marginLeft: 10,
   },
-  securityNote: {
+  // Modal Styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: '#1e2b2f',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingBottom: 30,
+  },
+  modalHeader: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 30,
-  },
-  securityText: {
-    fontSize: 14,
-    color: '#666',
-    marginLeft: 8,
-  },
-  stepsContainer: {
-    backgroundColor: '#fff',
     padding: 20,
-    borderRadius: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#2d3a3f',
   },
-  stepsTitle: {
-    fontSize: 18,
+  modalTitle: {
+    fontSize: 20,
     fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 15,
+    color: '#FFF',
   },
-  step: {
+  modalBody: {
+    padding: 20,
+  },
+  instructionStep: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 16,
   },
   stepNumber: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     backgroundColor: '#59cb01',
-    color: '#fff',
-    textAlign: 'center',
-    lineHeight: 24,
-    marginRight: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 16,
+  },
+  stepNumberText: {
+    fontSize: 16,
     fontWeight: 'bold',
+    color: '#141f23',
   },
   stepText: {
+    fontSize: 16,
+    color: '#FFF',
     flex: 1,
-    fontSize: 14,
-    color: '#555',
+  },
+  modalCloseButton: {
+    backgroundColor: '#59cb01',
+    marginHorizontal: 20,
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  modalCloseText: {
+    color: '#141f23',
+    fontSize: 17,
+    fontWeight: 'bold',
   },
 });
 

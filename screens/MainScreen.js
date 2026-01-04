@@ -7,8 +7,6 @@ import {
   ScrollView,
   SafeAreaView,
   Image,
-  Alert,
-  ActivityIndicator,
   RefreshControl,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -33,13 +31,11 @@ const MainScreen = ({ navigation }) => {
     try {
       setLoading(true);
 
-      // 1. Get Real Workout Count from check_ins table
-      const { count: workoutCount, error: countError } = await supabase
+      const { count: workoutCount } = await supabase
         .from("check_ins")
         .select("*", { count: "exact", head: true })
         .eq("user_id", user.id);
 
-      // 2. Get Latest Subscription for Expiry and Plan name
       const { data: latestSale } = await supabase
         .from("sales")
         .select("created_at, product_name")
@@ -49,7 +45,6 @@ const MainScreen = ({ navigation }) => {
         .limit(1)
         .single();
 
-      // Logic for Expiry (30 days from purchase)
       let expiryStr = "Expired/None";
       if (latestSale) {
         const date = new Date(latestSale.created_at);
@@ -59,9 +54,9 @@ const MainScreen = ({ navigation }) => {
 
       setStats({
         workouts: workoutCount || 0,
-        hours: Math.round((workoutCount || 0) * 1.5), // Assume 1.5h per session
-        calories: (workoutCount || 0) * 500, // Assume 500 kcal per session
-        achievements: Math.floor((workoutCount || 0) / 5), // 1 trophy every 5 visits
+        hours: Math.round((workoutCount || 0) * 1.5),
+        calories: (workoutCount || 0) * 500,
+        achievements: Math.floor((workoutCount || 0) / 5),
         expiryDate: expiryStr,
         planName: latestSale?.product_name || "No Active Plan",
       });
@@ -73,7 +68,6 @@ const MainScreen = ({ navigation }) => {
     }
   };
 
-  // Auto-refresh when screen comes into focus
   useFocusEffect(
     useCallback(() => {
       fetchDashboardData();
@@ -105,12 +99,16 @@ const MainScreen = ({ navigation }) => {
           />
         }
       >
-        {/* Profile Header */}
-        <View style={styles.profileHeader}>
-          <TouchableOpacity
-            style={styles.profileButton}
-            onPress={() => navigation.navigate("Profile")}
-          >
+        {/* Header Section */}
+        <View style={styles.header}>
+          <View style={styles.headerContent}>
+            <Text style={styles.greeting}>{getGreeting()}</Text>
+            <Text style={styles.userName}>{user?.full_name}</Text>
+            <View style={styles.roleContainer}>
+              <Text style={styles.roleText}>{user?.role?.toUpperCase()}</Text>
+            </View>
+          </View>
+          <TouchableOpacity onPress={() => navigation.navigate("Profile")}>
             <View style={styles.avatarContainer}>
               {user?.profile_image ? (
                 <Image
@@ -119,253 +117,375 @@ const MainScreen = ({ navigation }) => {
                 />
               ) : (
                 <View style={styles.avatarPlaceholder}>
-                  <Text style={styles.avatarText}>
+                  <Text style={styles.avatarInitial}>
                     {user?.full_name?.charAt(0)}
                   </Text>
                 </View>
               )}
             </View>
-            <View style={styles.profileInfo}>
-              <Text style={styles.greeting}>{getGreeting()},</Text>
-              <Text style={styles.userName}>{user?.full_name}</Text>
-              <View style={styles.roleBadge}>
-                <Text style={styles.roleText}>{user?.role?.toUpperCase()}</Text>
-              </View>
-            </View>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.logoutButton} onPress={logout}>
-            <Ionicons name="log-out-outline" size={24} color="#ff6b6b" />
           </TouchableOpacity>
         </View>
 
-        {/* Membership Status Card */}
-        <View style={styles.statusCard}>
-          <View style={styles.cardHeader}>
-            <Text style={styles.cardTitle}>Gym Access</Text>
-            <View
-              style={[
-                styles.statusBadge,
-                {
-                  backgroundColor: stats.expiryDate.includes("/")
-                    ? "#59cb01"
-                    : "#ff4444",
-                },
-              ]}
-            >
+        {/* Membership Card */}
+        <View style={styles.membershipCard}>
+          <View style={styles.membershipHeader}>
+            <View>
+              <Text style={styles.membershipTitle}>ACTIVE MEMBERSHIP</Text>
+              <Text style={styles.planName}>{stats.planName}</Text>
+            </View>
+            <View style={[
+              styles.statusBadge,
+              { backgroundColor: stats.expiryDate.includes("/") ? "#59cb01" : "#FF4444" }
+            ]}>
               <Text style={styles.statusText}>
-                {stats.expiryDate.includes("/") ? "ACTIVE" : "INACTIVE"}
+                {stats.expiryDate.includes("/") ? "ACTIVE" : "EXPIRED"}
               </Text>
             </View>
           </View>
-
-          <View style={styles.statusDetails}>
-            <View style={styles.statusItem}>
-              <Ionicons name="calendar-outline" size={20} color="#8a9a9f" />
-              <Text style={styles.statusLabel}>Expires:</Text>
-              <Text style={styles.statusValue}>{stats.expiryDate}</Text>
+          
+          <View style={styles.membershipDetails}>
+            <View style={styles.detailItem}>
+              <Ionicons name="calendar-outline" size={18} color="#8a9a9f" />
+              <Text style={styles.detailLabel}>Expires</Text>
+              <Text style={styles.detailValue}>{stats.expiryDate}</Text>
             </View>
-            <View style={styles.statusItem}>
-              <Ionicons name="fitness-outline" size={20} color="#8a9a9f" />
-              <Text style={styles.statusLabel}>Plan:</Text>
-              <Text style={styles.statusValue}>{stats.planName}</Text>
+            <View style={styles.detailItem}>
+              <Ionicons name="time-outline" size={18} color="#8a9a9f" />
+              <Text style={styles.detailLabel}>Check-ins</Text>
+              <Text style={styles.detailValue}>{stats.workouts} sessions</Text>
             </View>
           </View>
-
-          <TouchableOpacity
-            style={styles.renewButton}
-            onPress={() => navigation.navigate("Subscription")}
-          >
-            <Text style={styles.renewButtonText}>Manage Subscription</Text>
-            <Ionicons name="arrow-forward" size={18} color="#141f23" />
-          </TouchableOpacity>
+          
+          <View style={styles.actionButtons}>
+            <TouchableOpacity 
+              style={[styles.actionButton, styles.primaryButton]}
+              onPress={() => navigation.navigate("Subscription")}
+            >
+              <Ionicons name="card-outline" size={20} color="#141f23" />
+              <Text style={styles.primaryButtonText}>Manage Plan</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={[styles.actionButton, styles.secondaryButton]}
+              onPress={() => navigation.navigate("EcoCashPayment")}
+            >
+              <Ionicons name="phone-portrait" size={20} color="#59cb01" />
+              <Text style={styles.secondaryButtonText}>EcoCash Pay</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
-        {/* Progress Section */}
-        <Text style={styles.sectionTitle}>Your Progress</Text>
-        <View style={styles.statsGrid}>
-          <View style={styles.statCard}>
-            <Ionicons name="walk" size={28} color="#59cb01" />
+        {/* Stats Section */}
+        <Text style={styles.sectionTitle}>Fitness Progress</Text>
+        <View style={styles.statsContainer}>
+          <View style={styles.statItem}>
+            <View style={[styles.statIconContainer, { backgroundColor: 'rgba(89, 203, 1, 0.1)' }]}>
+              <Ionicons name="barbell-outline" size={24} color="#59cb01" />
+            </View>
             <Text style={styles.statNumber}>{stats.workouts}</Text>
-            <Text style={styles.statLabel}>Sessions</Text>
+            <Text style={styles.statLabel}>Workouts</Text>
           </View>
-          <View style={styles.statCard}>
-            <Ionicons name="time" size={28} color="#007AFF" />
+          
+          <View style={styles.statItem}>
+            <View style={[styles.statIconContainer, { backgroundColor: 'rgba(0, 122, 255, 0.1)' }]}>
+              <Ionicons name="time-outline" size={24} color="#007AFF" />
+            </View>
             <Text style={styles.statNumber}>{stats.hours}h</Text>
-            <Text style={styles.statLabel}>Total Time</Text>
+            <Text style={styles.statLabel}>Hours</Text>
           </View>
-          <View style={styles.statCard}>
-            <Ionicons name="flame" size={28} color="#FF3B30" />
+          
+          <View style={styles.statItem}>
+            <View style={[styles.statIconContainer, { backgroundColor: 'rgba(255, 68, 68, 0.1)' }]}>
+              <Ionicons name="flame-outline" size={24} color="#FF4444" />
+            </View>
             <Text style={styles.statNumber}>
-              {stats.calories.toLocaleString()}
+              {(stats.calories / 1000).toFixed(1)}k
             </Text>
-            <Text style={styles.statLabel}>Kcal Burned</Text>
+            <Text style={styles.statLabel}>Calories</Text>
           </View>
-          <View style={styles.statCard}>
-            <Ionicons name="trophy" size={28} color="#FFD700" />
+          
+          <View style={styles.statItem}>
+            <View style={[styles.statIconContainer, { backgroundColor: 'rgba(255, 215, 0, 0.1)' }]}>
+              <Ionicons name="trophy-outline" size={24} color="#FFD700" />
+            </View>
             <Text style={styles.statNumber}>{stats.achievements}</Text>
             <Text style={styles.statLabel}>Badges</Text>
           </View>
         </View>
 
-        {/* Staff/Manager Quick Actions */}
+        {/* Management Actions */}
         {(isStaff() || isManager()) && (
-          <View style={styles.sectionContainer}>
-            <Text style={styles.sectionTitle}>Management</Text>
-            <View style={styles.buttonGrid}>
-              <TouchableOpacity
-                style={[styles.gridButton, { backgroundColor: "#FFD700" }]}
+          <View style={styles.managementSection}>
+            <Text style={styles.sectionTitle}>Management Tools</Text>
+            <View style={styles.managementGrid}>
+              <TouchableOpacity 
+                style={styles.managementCard}
                 onPress={() => navigation.navigate("Attendance")}
               >
-                <Ionicons name="people" size={30} color="#141f23" />
-                <Text style={[styles.gridButtonText, { color: "#141f23" }]}>
-                  Check-In
-                </Text>
+                <View style={[styles.managementIcon, { backgroundColor: 'rgba(255, 215, 0, 0.1)' }]}>
+                  <Ionicons name="people-outline" size={28} color="#FFD700" />
+                </View>
+                <Text style={styles.managementText}>Check-ins</Text>
               </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[
-                  styles.gridButton,
-                  {
-                    backgroundColor: "#1e2b2f",
-                    borderWidth: 1,
-                    borderColor: "#59cb01",
-                  },
-                ]}
+              
+              <TouchableOpacity 
+                style={styles.managementCard}
                 onPress={() => navigation.navigate("Sales")}
               >
-                <Ionicons name="cart" size={30} color="#59cb01" />
-                <Text style={[styles.gridButtonText, { color: "#59cb01" }]}>
-                  Record Sale
-                </Text>
+                <View style={[styles.managementIcon, { backgroundColor: 'rgba(89, 203, 1, 0.1)' }]}>
+                  <Ionicons name="cart-outline" size={28} color="#59cb01" />
+                </View>
+                <Text style={styles.managementText}>Sales</Text>
               </TouchableOpacity>
             </View>
           </View>
         )}
 
-        {/* Member Quick Actions */}
-        <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>Quick Links</Text>
-          <View style={styles.buttonGrid}>
-            <TouchableOpacity
-              style={[styles.gridButton, { backgroundColor: "#007AFF" }]}
-              onPress={() => navigation.navigate("EcoCashPayment")}
-            >
-              <Ionicons name="phone-portrait" size={28} color="#fff" />
-              <Text style={styles.gridButtonText}>EcoCash Pay</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.gridButton, { backgroundColor: "#5856D6" }]}
-              onPress={() => navigation.navigate("Notifications")}
-            >
-              <Ionicons name="notifications" size={28} color="#fff" />
-              <Text style={styles.gridButtonText}>Alerts</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+        {/* Quick Logout */}
+        <TouchableOpacity style={styles.logoutContainer} onPress={logout}>
+          <Ionicons name="log-out-outline" size={20} color="#ff6b6b" />
+          <Text style={styles.logoutText}>Sign Out</Text>
+        </TouchableOpacity>
 
-        <View style={{ height: 100 }} />
+        <View style={{ height: 40 }} />
       </ScrollView>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: "#141f23" },
-  container: { flex: 1, paddingHorizontal: 20 },
-  profileHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginTop: 20,
-    marginBottom: 25,
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#141f23',
   },
-  profileButton: { flexDirection: "row", alignItems: "center", flex: 1 },
-  avatarPlaceholder: {
-    width: 55,
-    height: 55,
-    borderRadius: 28,
-    backgroundColor: "#59cb01",
-    alignItems: "center",
-    justifyContent: "center",
+  container: {
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingTop: 10,
   },
-  avatarText: { fontSize: 22, fontWeight: "bold", color: "#141f23" },
-  profileInfo: { marginLeft: 15 },
-  greeting: { color: "#8a9a9f", fontSize: 12 },
-  userName: { color: "#fff", fontSize: 18, fontWeight: "bold" },
-  roleBadge: {
-    backgroundColor: "rgba(89, 203, 1, 0.1)",
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 5,
-    marginTop: 4,
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 30,
+    marginTop: 10,
   },
-  roleText: { color: "#59cb01", fontSize: 10, fontWeight: "bold" },
-  logoutButton: { padding: 10 },
-  statusCard: {
-    backgroundColor: "#1e2b2f",
+  headerContent: {
+    flex: 1,
+  },
+  greeting: {
+    fontSize: 14,
+    color: '#8a9a9f',
+    fontWeight: '500',
+    marginBottom: 4,
+  },
+  userName: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#FFF',
+    marginBottom: 8,
+  },
+  roleContainer: {
+    backgroundColor: 'rgba(89, 203, 1, 0.15)',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
     borderRadius: 20,
-    padding: 20,
-    marginBottom: 25,
+    alignSelf: 'flex-start',
   },
-  cardHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 15,
+  roleText: {
+    color: '#59cb01',
+    fontSize: 12,
+    fontWeight: '600',
   },
-  cardTitle: { color: "#fff", fontSize: 18, fontWeight: "bold" },
-  statusBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 },
-  statusText: { color: "#141f23", fontWeight: "bold", fontSize: 10 },
-  statusDetails: { marginBottom: 15 },
-  statusItem: { flexDirection: "row", alignItems: "center", marginBottom: 8 },
-  statusLabel: { color: "#8a9a9f", marginLeft: 10, width: 70 },
-  statusValue: { color: "#fff", fontWeight: "600" },
-  renewButton: {
-    backgroundColor: "#59cb01",
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 15,
-    borderRadius: 12,
-    gap: 10,
+  avatarContainer: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    overflow: 'hidden',
   },
-  renewButtonText: { fontWeight: "bold", color: "#141f23" },
-  sectionTitle: {
-    color: "#fff",
+  avatarPlaceholder: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#1e2b2f',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarInitial: {
     fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 15,
+    fontWeight: 'bold',
+    color: '#59cb01',
   },
-  statsGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
-    marginBottom: 25,
+  avatar: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
   },
-  statCard: {
-    width: "48%",
-    backgroundColor: "#1e2b2f",
-    padding: 15,
-    borderRadius: 15,
-    alignItems: "center",
+  membershipCard: {
+    backgroundColor: '#1e2b2f',
+    borderRadius: 20,
+    padding: 24,
+    marginBottom: 30,
+  },
+  membershipHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 20,
+  },
+  membershipTitle: {
+    fontSize: 12,
+    color: '#8a9a9f',
+    fontWeight: '600',
+    letterSpacing: 1,
+    marginBottom: 4,
+  },
+  planName: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#FFF',
+  },
+  statusBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+  },
+  statusText: {
+    color: '#141f23',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  membershipDetails: {
+    marginBottom: 24,
+  },
+  detailItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  detailLabel: {
+    fontSize: 14,
+    color: '#8a9a9f',
+    marginLeft: 10,
+    marginRight: 8,
+    width: 80,
+  },
+  detailValue: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#FFF',
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  actionButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    borderRadius: 12,
+    gap: 8,
+  },
+  primaryButton: {
+    backgroundColor: '#59cb01',
+  },
+  primaryButtonText: {
+    color: '#141f23',
+    fontWeight: '600',
+    fontSize: 15,
+  },
+  secondaryButton: {
+    backgroundColor: 'rgba(89, 203, 1, 0.1)',
+    borderWidth: 1,
+    borderColor: '#59cb01',
+  },
+  secondaryButtonText: {
+    color: '#59cb01',
+    fontWeight: '600',
+    fontSize: 15,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#FFF',
+    marginBottom: 20,
+  },
+  statsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    marginBottom: 30,
+  },
+  statItem: {
+    width: '48%',
+    backgroundColor: '#1e2b2f',
+    borderRadius: 16,
+    padding: 20,
+    alignItems: 'center',
+  },
+  statIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: 12,
   },
   statNumber: {
-    color: "#fff",
-    fontSize: 22,
-    fontWeight: "bold",
-    marginVertical: 5,
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#FFF',
+    marginBottom: 4,
   },
-  statLabel: { color: "#8a9a9f", fontSize: 12 },
-  sectionContainer: { marginBottom: 20 },
-  buttonGrid: { flexDirection: "row", justifyContent: "space-between" },
-  gridButton: {
-    width: "48%",
+  statLabel: {
+    fontSize: 13,
+    color: '#8a9a9f',
+    fontWeight: '500',
+  },
+  managementSection: {
+    marginBottom: 30,
+  },
+  managementGrid: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  managementCard: {
+    flex: 1,
+    backgroundColor: '#1e2b2f',
+    borderRadius: 16,
     padding: 20,
-    borderRadius: 15,
-    alignItems: "center",
-    gap: 10,
+    alignItems: 'center',
   },
-  gridButtonText: { color: "#fff", fontWeight: "bold", fontSize: 13 },
+  managementIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+  },
+  managementText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#FFF',
+  },
+  logoutContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+    backgroundColor: 'rgba(255, 107, 107, 0.1)',
+    borderRadius: 12,
+    gap: 8,
+    marginTop: 10,
+  },
+  logoutText: {
+    color: '#ff6b6b',
+    fontSize: 15,
+    fontWeight: '600',
+  },
 });
 
 export default MainScreen;
