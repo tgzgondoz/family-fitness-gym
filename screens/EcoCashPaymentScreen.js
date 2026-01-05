@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,8 @@ import {
   KeyboardAvoidingView,
   Platform,
   Modal,
+  SafeAreaView,
+  StatusBar,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
@@ -22,6 +24,13 @@ const EcoCashPaymentScreen = ({ route, navigation }) => {
   const [loading, setLoading] = useState(false);
   const [pin, setPin] = useState('');
   const [showInstructions, setShowInstructions] = useState(false);
+
+  // Hide the default header
+  useEffect(() => {
+    navigation.setOptions({
+      headerShown: false
+    });
+  }, [navigation]);
 
   const handlePayment = async () => {
     if (!phoneNumber || !ecocashNumber || !pin) {
@@ -109,184 +118,224 @@ const EcoCashPaymentScreen = ({ route, navigation }) => {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      {/* Header - Hidden as requested */}
-      <View style={styles.header}>
-        <TouchableOpacity 
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Ionicons name="arrow-back" size={24} color="#FFF" />
-        </TouchableOpacity>
-        
-        <View style={styles.headerCenter}>
-          <Text style={styles.headerTitle}>EcoCash Payment</Text>
-        </View>
-        
-        <TouchableOpacity 
-          style={styles.infoButton}
-          onPress={() => setShowInstructions(true)}
-        >
-          <Ionicons name="information-circle-outline" size={24} color="#FFF" />
-        </TouchableOpacity>
-      </View>
-
-      {/* Main Content */}
-      <View style={styles.content}>
-        {/* Amount Display */}
-        <View style={styles.amountContainer}>
-          <Text style={styles.amount}>${amount || '50'}</Text>
-          <Text style={styles.plan}>{subscriptionType || 'monthly'} plan</Text>
-        </View>
-
-        {/* Form */}
-        <View style={styles.form}>
-          <View style={styles.inputGroup}>
-            <TextInput
-              style={styles.input}
-              placeholder="Phone Number"
-              placeholderTextColor="#8a9a9f"
-              keyboardType="phone-pad"
-              value={phoneNumber}
-              onChangeText={setPhoneNumber}
-              maxLength={10}
-            />
-          </View>
-
-          <View style={styles.inputGroup}>
-            <TextInput
-              style={styles.input}
-              placeholder="EcoCash Number"
-              placeholderTextColor="#8a9a9f"
-              keyboardType="phone-pad"
-              value={ecocashNumber}
-              onChangeText={setEcocashNumber}
-              maxLength={10}
-            />
-          </View>
-
-          <View style={styles.inputGroup}>
-            <TextInput
-              style={styles.input}
-              placeholder="PIN"
-              placeholderTextColor="#8a9a9f"
-              keyboardType="number-pad"
-              secureTextEntry
-              value={pin}
-              onChangeText={setPin}
-              maxLength={4}
-            />
-          </View>
-
-          {/* Confirm Payment Button */}
-          <TouchableOpacity
-            style={[styles.payButton, loading && styles.payButtonDisabled]}
-            onPress={handlePayment}
-            disabled={loading}
-          >
-            <Text style={styles.payButtonText}>
-              {loading ? 'Processing...' : 'Confirm Payment'}
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Nothing after the button - all text removed as requested */}
-      </View>
-
-      {/* Instructions Modal */}
-      <Modal
-        visible={showInstructions}
-        transparent={true}
-        animationType="slide"
-        onRequestClose={() => setShowInstructions(false)}
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar barStyle="light-content" />
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>How to Pay</Text>
-              <TouchableOpacity onPress={() => setShowInstructions(false)}>
-                <Ionicons name="close" size={24} color="#FFF" />
-              </TouchableOpacity>
-            </View>
-            
-            <View style={styles.modalBody}>
-              <View style={styles.instructionStep}>
-                <View style={styles.stepNumber}>
-                  <Text style={styles.stepNumberText}>1</Text>
-                </View>
-                <Text style={styles.stepText}>Dial *151# on EcoCash line</Text>
-              </View>
-              
-              <View style={styles.instructionStep}>
-                <View style={styles.stepNumber}>
-                  <Text style={styles.stepNumberText}>2</Text>
-                </View>
-                <Text style={styles.stepText}>Select "Send Money"</Text>
-              </View>
-              
-              <View style={styles.instructionStep}>
-                <View style={styles.stepNumber}>
-                  <Text style={styles.stepNumberText}>3</Text>
-                </View>
-                <Text style={styles.stepText}>Merchant: 0773 456 789</Text>
-              </View>
-              
-              <View style={styles.instructionStep}>
-                <View style={styles.stepNumber}>
-                  <Text style={styles.stepNumberText}>4</Text>
-                </View>
-                <Text style={styles.stepText}>Amount: ${amount || '50'}</Text>
-              </View>
-              
-              <View style={styles.instructionStep}>
-                <View style={styles.stepNumber}>
-                  <Text style={styles.stepNumberText}>5</Text>
-                </View>
-                <Text style={styles.stepText}>Reference: FAMILYFITNESS</Text>
-              </View>
-            </View>
-            
+        {/* Professional Header */}
+        <View style={styles.header}>
+          <View>
+            <Text style={styles.headerTitle}>EcoCash Payment</Text>
+            <Text style={styles.headerSubtitle}>
+              Complete your payment securely
+            </Text>
+          </View>
+          
+          <View style={styles.headerActions}>
             <TouchableOpacity 
-              style={styles.modalCloseButton}
-              onPress={() => setShowInstructions(false)}
+              style={styles.infoButton}
+              onPress={() => setShowInstructions(true)}
             >
-              <Text style={styles.modalCloseText}>Close</Text>
+              <Ionicons name="information-circle" size={24} color="#59cb01" />
             </TouchableOpacity>
           </View>
         </View>
-      </Modal>
-    </KeyboardAvoidingView>
+
+        {/* Main Content */}
+        <View style={styles.content}>
+          {/* Amount Display with Icon */}
+          <View style={styles.amountContainer}>
+            <View style={styles.amountIconContainer}>
+              <Ionicons name="cash" size={40} color="#59cb01" />
+            </View>
+            <Text style={styles.amount}>${amount || '50'}</Text>
+            <View style={styles.planBadge}>
+              <Text style={styles.plan}>{subscriptionType || 'monthly'} plan</Text>
+            </View>
+          </View>
+
+          {/* Form */}
+          <View style={styles.form}>
+            <View style={styles.inputGroup}>
+              <View style={styles.inputWithIcon}>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Phone Number"
+                  placeholderTextColor="#8a9a9f"
+                  keyboardType="phone-pad"
+                  value={phoneNumber}
+                  onChangeText={setPhoneNumber}
+                  maxLength={10}
+                />
+                {phoneNumber ? (
+                  <TouchableOpacity onPress={() => setPhoneNumber('')} style={styles.clearIcon}>
+                    <Ionicons name="close-circle" size={20} color="#8a9a9f" />
+                  </TouchableOpacity>
+                ) : (
+                  <Ionicons name="call" size={20} color="#8a9a9f" style={styles.inputRightIcon} />
+                )}
+              </View>
+            </View>
+
+            <View style={styles.inputGroup}>
+              <View style={styles.inputWithIcon}>
+                <TextInput
+                  style={styles.input}
+                  placeholder="EcoCash Number"
+                  placeholderTextColor="#8a9a9f"
+                  keyboardType="phone-pad"
+                  value={ecocashNumber}
+                  onChangeText={setEcocashNumber}
+                  maxLength={10}
+                />
+                {ecocashNumber ? (
+                  <TouchableOpacity onPress={() => setEcocashNumber('')} style={styles.clearIcon}>
+                    <Ionicons name="close-circle" size={20} color="#8a9a9f" />
+                  </TouchableOpacity>
+                ) : (
+                  <Ionicons name="card" size={20} color="#8a9a9f" style={styles.inputRightIcon} />
+                )}
+              </View>
+            </View>
+
+            <View style={styles.inputGroup}>
+              <View style={styles.inputWithIcon}>
+                <TextInput
+                  style={styles.input}
+                  placeholder="PIN"
+                  placeholderTextColor="#8a9a9f"
+                  keyboardType="number-pad"
+                  secureTextEntry
+                  value={pin}
+                  onChangeText={setPin}
+                  maxLength={4}
+                />
+                {pin ? (
+                  <TouchableOpacity onPress={() => setPin('')} style={styles.clearIcon}>
+                    <Ionicons name="close-circle" size={20} color="#8a9a9f" />
+                  </TouchableOpacity>
+                ) : (
+                  <Ionicons name="lock-closed" size={20} color="#8a9a9f" style={styles.inputRightIcon} />
+                )}
+              </View>
+            </View>
+
+            {/* Confirm Payment Button */}
+            <TouchableOpacity
+              style={[styles.payButton, loading && styles.payButtonDisabled]}
+              onPress={handlePayment}
+              disabled={loading}
+            >
+              <Text style={styles.payButtonText}>
+                {loading ? 'Processing...' : 'Confirm Payment'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Instructions Modal */}
+        <Modal
+          visible={showInstructions}
+          transparent={true}
+          animationType="slide"
+          onRequestClose={() => setShowInstructions(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>How to Pay with EcoCash</Text>
+                <TouchableOpacity onPress={() => setShowInstructions(false)}>
+                  <Ionicons name="close" size={24} color="#FFF" />
+                </TouchableOpacity>
+              </View>
+              
+              <View style={styles.modalBody}>
+                <View style={styles.instructionStep}>
+                  <View style={styles.stepNumber}>
+                    <Text style={styles.stepNumberText}>1</Text>
+                  </View>
+                  <Text style={styles.stepText}>Dial *151# on your EcoCash registered line</Text>
+                </View>
+                
+                <View style={styles.instructionStep}>
+                  <View style={styles.stepNumber}>
+                    <Text style={styles.stepNumberText}>2</Text>
+                  </View>
+                  <Text style={styles.stepText}>Choose "Send Money" from the menu options</Text>
+                </View>
+                
+                <View style={styles.instructionStep}>
+                  <View style={styles.stepNumber}>
+                    <Text style={styles.stepNumberText}>3</Text>
+                  </View>
+                  <Text style={styles.stepText}>Enter merchant number: 0773 456 789</Text>
+                </View>
+                
+                <View style={styles.instructionStep}>
+                  <View style={styles.stepNumber}>
+                    <Text style={styles.stepNumberText}>4</Text>
+                  </View>
+                  <Text style={styles.stepText}>Enter amount: ${amount || '50'}</Text>
+                </View>
+                
+                <View style={styles.instructionStep}>
+                  <View style={styles.stepNumber}>
+                    <Text style={styles.stepNumberText}>5</Text>
+                  </View>
+                  <Text style={styles.stepText}>Enter reference: FAMILYFITNESS</Text>
+                </View>
+              </View>
+              
+              <TouchableOpacity 
+                style={styles.modalCloseButton}
+                onPress={() => setShowInstructions(false)}
+              >
+                <Text style={styles.modalCloseText}>Got It</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#0c1519",
+  },
   container: {
     flex: 1,
-    backgroundColor: '#f2faea',
-  },
-  header: {
     backgroundColor: '#141f23',
-    paddingTop: 50,
+  },
+  // Professional Header
+  header: {
     paddingHorizontal: 20,
-    paddingBottom: 20,
+    paddingTop: 20,
+    paddingBottom: 15,
+    backgroundColor: '#141f23',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  backButton: {
-    padding: 8,
-  },
-  headerCenter: {
-    flex: 1,
-    alignItems: 'center',
-  },
   headerTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#FFF',
+    color: "#fff",
+    fontSize: 32,
+    fontWeight: "800",
+    letterSpacing: -0.5,
+  },
+  headerSubtitle: {
+    color: "#8a9a9f",
+    fontSize: 14,
+    marginTop: 4,
+    fontWeight: "500",
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   infoButton: {
     padding: 8,
@@ -294,21 +343,37 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: 20,
-    paddingTop: 40,
+    paddingTop: 30,
   },
   amountContainer: {
     alignItems: 'center',
     marginBottom: 40,
   },
+  amountIconContainer: {
+    backgroundColor: 'rgba(89, 203, 1, 0.1)',
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 15,
+  },
   amount: {
     fontSize: 48,
     fontWeight: 'bold',
-    color: '#141f23',
-    marginBottom: 8,
+    color: '#FFF',
+    marginBottom: 10,
+  },
+  planBadge: {
+    backgroundColor: '#59cb01',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
   },
   plan: {
-    fontSize: 16,
-    color: '#8a9a9f',
+    fontSize: 14,
+    color: '#141f23',
+    fontWeight: '600',
   },
   form: {
     flex: 1,
@@ -316,15 +381,26 @@ const styles = StyleSheet.create({
   inputGroup: {
     marginBottom: 20,
   },
+  inputWithIcon: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   input: {
-    backgroundColor: '#FFF',
+    flex: 1,
+    backgroundColor: '#1e2b2f',
     borderRadius: 12,
     paddingHorizontal: 20,
     paddingVertical: 18,
     fontSize: 16,
-    color: '#141f23',
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
+    color: '#FFF',
+  },
+  inputRightIcon: {
+    position: 'absolute',
+    right: 20,
+  },
+  clearIcon: {
+    position: 'absolute',
+    right: 20,
   },
   payButton: {
     backgroundColor: '#59cb01',

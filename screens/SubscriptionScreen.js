@@ -17,11 +17,18 @@ import { supabase } from "../config/supabase";
 
 const { width } = Dimensions.get("window");
 
-const SubscriptionScreen = () => {
+const SubscriptionScreen = ({ navigation }) => {
   const { user } = useAuth();
   const [subscription, setSubscription] = useState(null);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+
+  // Hide the default header
+  useEffect(() => {
+    navigation.setOptions({
+      headerShown: false
+    });
+  }, [navigation]);
 
   // 1. Define Plans strictly as requested
   const plans = [

@@ -15,7 +15,7 @@ import { supabase } from "../config/supabase";
 import { useFocusEffect } from "@react-navigation/native";
 
 const MainScreen = ({ navigation }) => {
-  const { user, logout, isManager, isStaff } = useAuth();
+  const { user, isManager, isStaff } = useAuth();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [stats, setStats] = useState({
@@ -126,7 +126,7 @@ const MainScreen = ({ navigation }) => {
           </TouchableOpacity>
         </View>
 
-        {/* Membership Card */}
+        {/* Membership Card - SIMPLIFIED */}
         <View style={styles.membershipCard}>
           <View style={styles.membershipHeader}>
             <View>
@@ -145,12 +145,12 @@ const MainScreen = ({ navigation }) => {
           
           <View style={styles.membershipDetails}>
             <View style={styles.detailItem}>
-              <Ionicons name="calendar-outline" size={18} color="#8a9a9f" />
+              <Ionicons name="calendar" size={18} color="#8a9a9f" />
               <Text style={styles.detailLabel}>Expires</Text>
               <Text style={styles.detailValue}>{stats.expiryDate}</Text>
             </View>
             <View style={styles.detailItem}>
-              <Ionicons name="time-outline" size={18} color="#8a9a9f" />
+              <Ionicons name="time" size={18} color="#8a9a9f" />
               <Text style={styles.detailLabel}>Check-ins</Text>
               <Text style={styles.detailValue}>{stats.workouts} sessions</Text>
             </View>
@@ -158,15 +158,15 @@ const MainScreen = ({ navigation }) => {
           
           <View style={styles.actionButtons}>
             <TouchableOpacity 
-              style={[styles.actionButton, styles.primaryButton]}
+              style={styles.primaryButton}
               onPress={() => navigation.navigate("Subscription")}
             >
-              <Ionicons name="card-outline" size={20} color="#141f23" />
+              <Ionicons name="card" size={20} color="#141f23" />
               <Text style={styles.primaryButtonText}>Manage Plan</Text>
             </TouchableOpacity>
             
             <TouchableOpacity 
-              style={[styles.actionButton, styles.secondaryButton]}
+              style={styles.secondaryButton}
               onPress={() => navigation.navigate("EcoCashPayment")}
             >
               <Ionicons name="phone-portrait" size={20} color="#59cb01" />
@@ -180,7 +180,7 @@ const MainScreen = ({ navigation }) => {
         <View style={styles.statsContainer}>
           <View style={styles.statItem}>
             <View style={[styles.statIconContainer, { backgroundColor: 'rgba(89, 203, 1, 0.1)' }]}>
-              <Ionicons name="barbell-outline" size={24} color="#59cb01" />
+              <Ionicons name="barbell" size={24} color="#59cb01" />
             </View>
             <Text style={styles.statNumber}>{stats.workouts}</Text>
             <Text style={styles.statLabel}>Workouts</Text>
@@ -188,7 +188,7 @@ const MainScreen = ({ navigation }) => {
           
           <View style={styles.statItem}>
             <View style={[styles.statIconContainer, { backgroundColor: 'rgba(0, 122, 255, 0.1)' }]}>
-              <Ionicons name="time-outline" size={24} color="#007AFF" />
+              <Ionicons name="time" size={24} color="#007AFF" />
             </View>
             <Text style={styles.statNumber}>{stats.hours}h</Text>
             <Text style={styles.statLabel}>Hours</Text>
@@ -196,7 +196,7 @@ const MainScreen = ({ navigation }) => {
           
           <View style={styles.statItem}>
             <View style={[styles.statIconContainer, { backgroundColor: 'rgba(255, 68, 68, 0.1)' }]}>
-              <Ionicons name="flame-outline" size={24} color="#FF4444" />
+              <Ionicons name="flame" size={24} color="#FF4444" />
             </View>
             <Text style={styles.statNumber}>
               {(stats.calories / 1000).toFixed(1)}k
@@ -206,46 +206,36 @@ const MainScreen = ({ navigation }) => {
           
           <View style={styles.statItem}>
             <View style={[styles.statIconContainer, { backgroundColor: 'rgba(255, 215, 0, 0.1)' }]}>
-              <Ionicons name="trophy-outline" size={24} color="#FFD700" />
+              <Ionicons name="trophy" size={24} color="#FFD700" />
             </View>
             <Text style={styles.statNumber}>{stats.achievements}</Text>
             <Text style={styles.statLabel}>Badges</Text>
           </View>
         </View>
 
-        {/* Management Actions */}
+        {/* Management Actions - SIMPLIFIED */}
         {(isStaff() || isManager()) && (
           <View style={styles.managementSection}>
             <Text style={styles.sectionTitle}>Management Tools</Text>
             <View style={styles.managementGrid}>
               <TouchableOpacity 
-                style={styles.managementCard}
+                style={styles.managementItem}
                 onPress={() => navigation.navigate("Attendance")}
               >
-                <View style={[styles.managementIcon, { backgroundColor: 'rgba(255, 215, 0, 0.1)' }]}>
-                  <Ionicons name="people-outline" size={28} color="#FFD700" />
-                </View>
+                <Ionicons name="people" size={28} color="#FFD700" />
                 <Text style={styles.managementText}>Check-ins</Text>
               </TouchableOpacity>
               
               <TouchableOpacity 
-                style={styles.managementCard}
+                style={styles.managementItem}
                 onPress={() => navigation.navigate("Sales")}
               >
-                <View style={[styles.managementIcon, { backgroundColor: 'rgba(89, 203, 1, 0.1)' }]}>
-                  <Ionicons name="cart-outline" size={28} color="#59cb01" />
-                </View>
+                <Ionicons name="cart" size={28} color="#59cb01" />
                 <Text style={styles.managementText}>Sales</Text>
               </TouchableOpacity>
             </View>
           </View>
         )}
-
-        {/* Quick Logout */}
-        <TouchableOpacity style={styles.logoutContainer} onPress={logout}>
-          <Ionicons name="log-out-outline" size={20} color="#ff6b6b" />
-          <Text style={styles.logoutText}>Sign Out</Text>
-        </TouchableOpacity>
 
         <View style={{ height: 40 }} />
       </ScrollView>
@@ -321,17 +311,18 @@ const styles = StyleSheet.create({
     height: 50,
     borderRadius: 25,
   },
+  // Membership Card - SIMPLIFIED
   membershipCard: {
     backgroundColor: '#1e2b2f',
-    borderRadius: 20,
-    padding: 24,
+    borderRadius: 16,
+    padding: 20,
     marginBottom: 30,
   },
   membershipHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 20,
+    marginBottom: 16,
   },
   membershipTitle: {
     fontSize: 12,
@@ -356,12 +347,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   membershipDetails: {
-    marginBottom: 24,
+    marginBottom: 20,
   },
   detailItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 10,
   },
   detailLabel: {
     fontSize: 14,
@@ -379,17 +370,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 12,
   },
-  actionButton: {
+  primaryButton: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 14,
+    backgroundColor: '#59cb01',
+    paddingVertical: 12,
     borderRadius: 12,
     gap: 8,
-  },
-  primaryButton: {
-    backgroundColor: '#59cb01',
   },
   primaryButtonText: {
     color: '#141f23',
@@ -397,9 +386,14 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   secondaryButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: 'rgba(89, 203, 1, 0.1)',
-    borderWidth: 1,
-    borderColor: '#59cb01',
+    paddingVertical: 12,
+    borderRadius: 12,
+    gap: 8,
   },
   secondaryButtonText: {
     color: '#59cb01',
@@ -410,7 +404,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: '#FFF',
-    marginBottom: 20,
+    marginBottom: 16,
   },
   statsContainer: {
     flexDirection: 'row',
@@ -422,7 +416,7 @@ const styles = StyleSheet.create({
     width: '48%',
     backgroundColor: '#1e2b2f',
     borderRadius: 16,
-    padding: 20,
+    padding: 16,
     alignItems: 'center',
   },
   statIconContainer: {
@@ -451,40 +445,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 12,
   },
-  managementCard: {
+  // Management Items - SIMPLIFIED
+  managementItem: {
     flex: 1,
     backgroundColor: '#1e2b2f',
     borderRadius: 16,
     padding: 20,
     alignItems: 'center',
   },
-  managementIcon: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 12,
-  },
   managementText: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '600',
     color: '#FFF',
-  },
-  logoutContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 16,
-    backgroundColor: 'rgba(255, 107, 107, 0.1)',
-    borderRadius: 12,
-    gap: 8,
-    marginTop: 10,
-  },
-  logoutText: {
-    color: '#ff6b6b',
-    fontSize: 15,
-    fontWeight: '600',
+    marginTop: 8,
   },
 });
 
