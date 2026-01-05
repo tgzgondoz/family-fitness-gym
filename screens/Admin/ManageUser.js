@@ -1,4 +1,3 @@
-// screens/ManageUser.js
 import React, { useState } from 'react';
 import {
   View,
@@ -10,21 +9,20 @@ import {
   TextInput,
   Modal,
   Alert,
-  Switch,
-  FlatList
+  FlatList,
+  StatusBar
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 const ManageUser = ({ navigation }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterModalVisible, setFilterModalVisible] = useState(false);
-  const [viewType, setViewType] = useState('grid'); // 'grid' or 'list'
+  const [selectedUsers, setSelectedUsers] = useState([]);
   const [filters, setFilters] = useState({
     status: 'all',
     membership: 'all',
     sortBy: 'newest'
   });
-  const [selectedUsers, setSelectedUsers] = useState([]);
 
   // Sample user data
   const [users, setUsers] = useState([
@@ -105,13 +103,6 @@ const ManageUser = ({ navigation }) => {
     }
   };
 
-  const getMembershipColor = (membership) => {
-    if (membership.includes('Premium') || membership.includes('Platinum')) return '#59cb01';
-    if (membership.includes('Gold')) return '#ffd93d';
-    if (membership.includes('Basic')) return '#36a1d6';
-    return '#8a9a9f';
-  };
-
   const handleSelectUser = (userId) => {
     setSelectedUsers(prev => {
       if (prev.includes(userId)) {
@@ -163,7 +154,6 @@ const ManageUser = ({ navigation }) => {
         ]
       );
     } else if (action === 'activate') {
-      // Implement activation logic
       Alert.alert('Success', `${selectedUsers.length} users activated`);
       setSelectedUsers([]);
     }
@@ -202,7 +192,7 @@ const ManageUser = ({ navigation }) => {
             [
               { text: 'View Details', onPress: () => navigation.navigate('UserDetails', { userId: item.id }) },
               { text: 'Edit User', onPress: () => navigation.navigate('EditUser', { userId: item.id }) },
-              { text: 'Send Message', onPress: () => {/* Implement message */} },
+              { text: 'Send Message', onPress: () => {} },
               { text: 'Delete', style: 'destructive', onPress: () => handleDeleteUser(item.id) },
               { text: 'Cancel', style: 'cancel' }
             ]
@@ -214,126 +204,83 @@ const ManageUser = ({ navigation }) => {
 
       <View style={styles.cardDetails}>
         <View style={styles.detailRow}>
-          <Ionicons name="call-outline" size={16} color="#8a9a9f" />
+          <Ionicons name="call" size={16} color="#8a9a9f" />
           <Text style={styles.detailText}>{item.phone}</Text>
         </View>
         <View style={styles.detailRow}>
-          <Ionicons name="card-outline" size={16} color="#8a9a9f" />
-          <Text style={[styles.detailText, { color: getMembershipColor(item.membership) }]}>
-            {item.membership}
-          </Text>
+          <Ionicons name="card" size={16} color="#8a9a9f" />
+          <Text style={styles.detailText}>{item.membership}</Text>
         </View>
         <View style={styles.detailRow}>
-          <Ionicons name="calendar-outline" size={16} color="#8a9a9f" />
+          <Ionicons name="calendar" size={16} color="#8a9a9f" />
           <Text style={styles.detailText}>Joined: {item.joinDate}</Text>
         </View>
-      </View>
-
-      <View style={styles.cardActions}>
-        <TouchableOpacity
-          style={styles.actionButton}
-          onPress={() => navigation.navigate('UserDetails', { userId: item.id })}
-        >
-          <Ionicons name="eye-outline" size={16} color="#59cb01" />
-          <Text style={styles.actionButtonText}>View</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.actionButton, styles.editButton]}
-          onPress={() => navigation.navigate('EditUser', { userId: item.id })}
-        >
-          <Ionicons name="create-outline" size={16} color="#36a1d6" />
-          <Text style={[styles.actionButtonText, { color: '#36a1d6' }]}>Edit</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.actionButton, styles.messageButton]}
-          onPress={() => {/* Implement message */}}
-        >
-          <Ionicons name="chatbubble-outline" size={16} color="#ffd93d" />
-          <Text style={[styles.actionButtonText, { color: '#ffd93d' }]}>Message</Text>
-        </TouchableOpacity>
       </View>
     </TouchableOpacity>
   );
 
   return (
     <SafeAreaView style={styles.safeArea}>
+      <StatusBar barStyle="light-content" />
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View style={styles.header}>
           <View>
-            <Text style={styles.title}>Manage Members</Text>
-            <Text style={styles.subtitle}>{users.length} total members</Text>
+            <Text style={styles.headerTitle}>Manage Members</Text>
+            <Text style={styles.headerSubtitle}>{users.length} total members</Text>
           </View>
           <TouchableOpacity
             style={styles.addButton}
             onPress={() => navigation.navigate('AddMember')}
           >
-            <Ionicons name="add" size={24} color="#f2faea" />
+            <Ionicons name="add" size={24} color="#141f23" />
           </TouchableOpacity>
         </View>
 
-        {/* Search and Filter Bar */}
-        <View style={styles.searchBar}>
-          <View style={styles.searchInputContainer}>
-            <Ionicons name="search" size={20} color="#8a9a9f" style={styles.searchIcon} />
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Search members..."
-              placeholderTextColor="#8a9a9f"
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-            />
-          </View>
+        {/* Search Bar */}
+        <View style={styles.searchContainer}>
+          <Ionicons name="search" size={20} color="#8a9a9f" style={styles.searchIcon} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search members..."
+            placeholderTextColor="#8a9a9f"
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
           <TouchableOpacity
             style={styles.filterButton}
             onPress={() => setFilterModalVisible(true)}
           >
-            <Ionicons name="filter" size={20} color="#f2faea" />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.viewToggleButton}
-            onPress={() => setViewType(viewType === 'grid' ? 'list' : 'grid')}
-          >
-            <Ionicons
-              name={viewType === 'grid' ? 'list' : 'grid'}
-              size={20}
-              color="#f2faea"
-            />
+            <Ionicons name="filter" size={20} color="#59cb01" />
           </TouchableOpacity>
         </View>
 
-        {/* Bulk Actions Bar */}
+        {/* Bulk Actions */}
         {selectedUsers.length > 0 && (
-          <View style={styles.bulkActionsBar}>
+          <View style={styles.bulkContainer}>
             <Text style={styles.selectedCount}>
               {selectedUsers.length} selected
             </Text>
             <View style={styles.bulkButtons}>
               <TouchableOpacity
-                style={[styles.bulkButton, styles.activateButton]}
+                style={styles.bulkButton}
                 onPress={() => handleBulkAction('activate')}
               >
                 <Ionicons name="checkmark-circle" size={16} color="#59cb01" />
-                <Text style={[styles.bulkButtonText, { color: '#59cb01' }]}>
-                  Activate
-                </Text>
+                <Text style={styles.bulkButtonText}>Activate</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.bulkButton, styles.deleteButton]}
+                style={styles.bulkButton}
                 onPress={() => handleBulkAction('delete')}
               >
                 <Ionicons name="trash" size={16} color="#ff6b6b" />
-                <Text style={[styles.bulkButtonText, { color: '#ff6b6b' }]}>
-                  Delete
-                </Text>
+                <Text style={styles.bulkButtonText}>Delete</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.bulkButton, styles.clearButton]}
+                style={styles.bulkButton}
                 onPress={() => setSelectedUsers([])}
               >
-                <Text style={[styles.bulkButtonText, { color: '#8a9a9f' }]}>
-                  Clear
-                </Text>
+                <Text style={styles.bulkButtonText}>Clear</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -349,10 +296,10 @@ const ManageUser = ({ navigation }) => {
           />
         </View>
 
-        {/* Stats Summary */}
+        {/* Stats */}
         <View style={styles.statsContainer}>
           <View style={styles.statItem}>
-            <View style={[styles.statIcon, { backgroundColor: '#59cb0120' }]}>
+            <View style={[styles.statIcon, { backgroundColor: 'rgba(89, 203, 1, 0.1)' }]}>
               <Ionicons name="checkmark-circle" size={20} color="#59cb01" />
             </View>
             <View>
@@ -363,7 +310,7 @@ const ManageUser = ({ navigation }) => {
             </View>
           </View>
           <View style={styles.statItem}>
-            <View style={[styles.statIcon, { backgroundColor: '#ff6b6b20' }]}>
+            <View style={[styles.statIcon, { backgroundColor: 'rgba(255, 107, 107, 0.1)' }]}>
               <Ionicons name="close-circle" size={20} color="#ff6b6b" />
             </View>
             <View>
@@ -374,7 +321,7 @@ const ManageUser = ({ navigation }) => {
             </View>
           </View>
           <View style={styles.statItem}>
-            <View style={[styles.statIcon, { backgroundColor: '#ffd93d20' }]}>
+            <View style={[styles.statIcon, { backgroundColor: 'rgba(255, 215, 0, 0.1)' }]}>
               <Ionicons name="time" size={20} color="#ffd93d" />
             </View>
             <View>
@@ -397,9 +344,9 @@ const ManageUser = ({ navigation }) => {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Filter & Sort</Text>
+              <Text style={styles.modalTitle}>Filter Members</Text>
               <TouchableOpacity onPress={() => setFilterModalVisible(false)}>
-                <Ionicons name="close" size={24} color="#f2faea" />
+                <Ionicons name="close" size={24} color="#ff6b6b" />
               </TouchableOpacity>
             </View>
 
@@ -474,13 +421,13 @@ const ManageUser = ({ navigation }) => {
 
             <View style={styles.modalActions}>
               <TouchableOpacity
-                style={[styles.modalButton, styles.resetButton]}
+                style={styles.resetButton}
                 onPress={() => setFilters({ status: 'all', membership: 'all', sortBy: 'newest' })}
               >
                 <Text style={styles.resetButtonText}>Reset</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.modalButton, styles.applyButton]}
+                style={styles.applyButton}
                 onPress={() => setFilterModalVisible(false)}
               >
                 <Text style={styles.applyButtonText}>Apply Filters</Text>
@@ -500,24 +447,27 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    backgroundColor: '#141f23',
     paddingHorizontal: 20,
   },
+  // Header
   header: {
+    paddingTop: 20,
+    paddingBottom: 15,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 20,
   },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#f2faea',
-    marginBottom: 4,
+  headerTitle: {
+    color: "#fff",
+    fontSize: 32,
+    fontWeight: "800",
+    letterSpacing: -0.5,
   },
-  subtitle: {
+  headerSubtitle: {
+    color: "#8a9a9f",
     fontSize: 14,
-    color: '#8a9a9f',
+    marginTop: 4,
+    fontWeight: "500",
   },
   addButton: {
     width: 44,
@@ -527,20 +477,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  searchBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  searchInputContainer: {
-    flex: 1,
+  // Search
+  searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#1e2b2f',
     borderRadius: 12,
     paddingHorizontal: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(242, 250, 234, 0.1)',
+    marginBottom: 20,
   },
   searchIcon: {
     marginRight: 8,
@@ -548,32 +492,14 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     height: 44,
-    color: '#f2faea',
+    color: '#FFF',
     fontSize: 16,
   },
   filterButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    backgroundColor: '#1e2b2f',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginLeft: 10,
-    borderWidth: 1,
-    borderColor: 'rgba(242, 250, 234, 0.1)',
+    padding: 8,
   },
-  viewToggleButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    backgroundColor: '#1e2b2f',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginLeft: 10,
-    borderWidth: 1,
-    borderColor: 'rgba(242, 250, 234, 0.1)',
-  },
-  bulkActionsBar: {
+  // Bulk Actions
+  bulkContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -581,8 +507,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     marginBottom: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(89, 203, 1, 0.3)',
   },
   selectedCount: {
     fontSize: 14,
@@ -592,6 +516,7 @@ const styles = StyleSheet.create({
   bulkButtons: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 8,
   },
   bulkButton: {
     flexDirection: 'row',
@@ -599,29 +524,26 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 8,
-    marginLeft: 8,
-    backgroundColor: 'rgba(242, 250, 234, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    gap: 4,
   },
   bulkButtonText: {
     fontSize: 12,
     fontWeight: '600',
-    marginLeft: 4,
+    color: '#FFF',
   },
+  // Users
   usersContainer: {
-    marginBottom: 25,
+    marginBottom: 20,
   },
   userCard: {
     backgroundColor: '#1e2b2f',
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(242, 250, 234, 0.1)',
   },
   selectedCard: {
-    borderColor: '#59cb01',
-    borderWidth: 2,
-    backgroundColor: 'rgba(89, 203, 1, 0.05)',
+    backgroundColor: 'rgba(89, 203, 1, 0.1)',
   },
   cardHeader: {
     flexDirection: 'row',
@@ -639,15 +561,15 @@ const styles = StyleSheet.create({
   avatarText: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#f2faea',
+    color: '#FFF',
   },
   userInfo: {
     flex: 1,
   },
   userName: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#f2faea',
+    fontWeight: '600',
+    color: '#FFF',
     marginBottom: 2,
   },
   userEmail: {
@@ -683,38 +605,10 @@ const styles = StyleSheet.create({
   },
   detailText: {
     fontSize: 12,
-    color: '#f2faea',
+    color: '#FFF',
     marginLeft: 8,
   },
-  cardActions: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(242, 250, 234, 0.1)',
-    paddingTop: 12,
-  },
-  actionButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 8,
-    marginHorizontal: 4,
-  },
-  actionButtonText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#59cb01',
-    marginLeft: 4,
-  },
-  editButton: {
-    borderLeftWidth: 1,
-    borderRightWidth: 1,
-    borderColor: 'rgba(242, 250, 234, 0.1)',
-  },
-  messageButton: {
-    // Additional styles if needed
-  },
+  // Stats
   statsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -740,17 +634,17 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#f2faea',
+    color: '#FFF',
   },
   statLabel: {
     fontSize: 11,
     color: '#8a9a9f',
     textTransform: 'uppercase',
   },
-  // Modal Styles
+  // Modal
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'flex-end',
   },
   modalContent: {
@@ -769,28 +663,27 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#f2faea',
+    color: '#FFF',
   },
   filterSection: {
     marginBottom: 25,
   },
   filterLabel: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '600',
-    color: '#f2faea',
+    color: '#FFF',
     marginBottom: 12,
   },
   filterOptions: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    gap: 8,
   },
   filterOption: {
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: 'rgba(242, 250, 234, 0.1)',
-    marginRight: 8,
-    marginBottom: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
   },
   filterOptionActive: {
     backgroundColor: '#59cb01',
@@ -801,27 +694,26 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   filterOptionTextActive: {
-    color: '#f2faea',
+    color: '#141f23',
   },
   modalActions: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    gap: 12,
     marginTop: 20,
   },
-  modalButton: {
+  resetButton: {
     flex: 1,
-    paddingVertical: 14,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    padding: 14,
     borderRadius: 12,
     alignItems: 'center',
-    justifyContent: 'center',
-  },
-  resetButton: {
-    backgroundColor: 'rgba(242, 250, 234, 0.1)',
-    marginRight: 8,
   },
   applyButton: {
+    flex: 1,
     backgroundColor: '#59cb01',
-    marginLeft: 8,
+    padding: 14,
+    borderRadius: 12,
+    alignItems: 'center',
   },
   resetButtonText: {
     fontSize: 14,
@@ -831,7 +723,7 @@ const styles = StyleSheet.create({
   applyButtonText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#f2faea',
+    color: '#141f23',
   },
 });
 

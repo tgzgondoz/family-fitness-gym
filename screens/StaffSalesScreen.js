@@ -190,394 +190,506 @@ const StaffSalesScreen = () => {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" />
 
-      {/* GLOSSY HEADER DASHBOARD */}
-      <View style={styles.dashboardCard}>
+      {/* Revenue Header */}
+      <View style={styles.header}>
         <View>
-          <Text style={styles.dashLabel}>REVENUE SUMMARY</Text>
-          <Text style={styles.dashValue}>${totalRevenue.toFixed(2)}</Text>
+          <Text style={styles.headerTitle}>Sales Dashboard</Text>
+          <Text style={styles.headerSubtitle}>Track and process sales</Text>
         </View>
-        <TouchableOpacity style={styles.refreshBtn} onPress={fetchData}>
-          <Ionicons name="sync-outline" size={24} color="#FFD700" />
+        <TouchableOpacity style={styles.refreshButton} onPress={fetchData}>
+          <Ionicons name="sync" size={24} color="#59cb01" />
         </TouchableOpacity>
       </View>
 
+      {/* Revenue Summary */}
+      <View style={styles.revenueSection}>
+        <Text style={styles.revenueLabel}>Total Revenue</Text>
+        <Text style={styles.revenueValue}>${totalRevenue.toFixed(2)}</Text>
+      </View>
+
       <View style={styles.content}>
-        <Text style={styles.sectionTitle}>Live Activity Feed</Text>
+        <Text style={styles.sectionTitle}>Recent Sales</Text>
         <FlatList
           data={sales}
           keyExtractor={(item) => item.id}
           showsVerticalScrollIndicator={false}
           renderItem={({ item }) => (
-            <View style={styles.saleTile}>
-              <View
-                style={[
-                  styles.indicator,
-                  {
-                    backgroundColor:
-                      item.type === "subscription" ? "#FFD700" : "#4CD964",
-                  },
-                ]}
-              />
-              <View style={{ flex: 1 }}>
+            <View style={styles.saleItem}>
+              <View style={styles.saleInfo}>
                 <Text style={styles.clientName}>
                   {item.client?.full_name || "Walk-in Guest"}
                 </Text>
-                <Text style={styles.saleDesc}>{item.product_name}</Text>
-              </View>
-              <View style={{ alignItems: "flex-end" }}>
-                <Text style={styles.salePrice}>${item.amount?.toFixed(2)}</Text>
+                <Text style={styles.saleDescription}>{item.product_name}</Text>
                 <Text style={styles.saleMethod}>{item.payment_method}</Text>
+              </View>
+              <View style={styles.saleAmount}>
+                <Text style={styles.salePrice}>${item.amount?.toFixed(2)}</Text>
+                <Text style={styles.saleType}>{item.type}</Text>
               </View>
             </View>
           )}
           ListEmptyComponent={
             <View style={styles.emptyState}>
-              <Ionicons name="bar-chart-outline" size={40} color="#1e2b2f" />
-              <Text style={styles.emptyText}>No sales recorded yet.</Text>
+              <Ionicons name="bar-chart" size={40} color="#8a9a9f" />
+              <Text style={styles.emptyText}>No sales recorded yet</Text>
             </View>
           }
         />
       </View>
 
-      {/* FLOATING ACTION BUTTON */}
+      {/* Add Sale Button */}
       <TouchableOpacity
-        style={styles.fab}
+        style={styles.addButton}
         onPress={() => setShowNewSaleModal(true)}
       >
-        <Ionicons name="add" size={32} color="#000" />
-        <Text style={styles.fabText}>SALE</Text>
+        <Ionicons name="add" size={24} color="#141f23" />
+        <Text style={styles.addButtonText}>New Sale</Text>
       </TouchableOpacity>
 
-      {/* ENHANCED TRANSACTION MODAL */}
+      {/* New Sale Modal */}
       <Modal
         visible={showNewSaleModal}
         animationType="slide"
-        presentationStyle="fullScreen"
+        transparent={false}
       >
-        <View style={styles.fullModal}>
-          <SafeAreaView style={{ flex: 1 }}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>New Transaction</Text>
-              <TouchableOpacity onPress={() => setShowNewSaleModal(false)}>
-                <Ionicons name="close-circle" size={36} color="#ff4444" />
+        <SafeAreaView style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>New Sale</Text>
+            <TouchableOpacity onPress={() => setShowNewSaleModal(false)}>
+              <Ionicons name="close" size={24} color="#ff6b6b" />
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView contentContainerStyle={styles.modalContent}>
+            {/* Client Selection */}
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Client</Text>
+              <TouchableOpacity
+                style={styles.toggleButton}
+                onPress={() => setIsManualClient(!isManualClient)}
+              >
+                <Text style={styles.toggleText}>
+                  {isManualClient ? "Select Registered Client" : "Add Walk-in Client"}
+                </Text>
               </TouchableOpacity>
-            </View>
-
-            <ScrollView contentContainerStyle={{ padding: 20 }}>
-              {/* STEP 1: CLIENT SELECT */}
-              <View style={styles.stepHeader}>
-                <Text style={styles.stepNum}>1</Text>
-                <Text style={styles.stepLabel}>Who is paying?</Text>
-                <TouchableOpacity
-                  onPress={() => setIsManualClient(!isManualClient)}
-                >
-                  <Text style={styles.linkText}>
-                    {isManualClient ? "Registered" : "Walk-in"}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-
+              
               {isManualClient ? (
                 <TextInput
-                  style={styles.darkInput}
-                  placeholder="Enter Full Name"
-                  placeholderTextColor="#555"
+                  style={styles.input}
+                  placeholder="Client Name"
+                  placeholderTextColor="#8a9a9f"
                   value={manualName}
                   onChangeText={setManualName}
                 />
               ) : (
-                <View style={styles.chipGrid}>
-                  {clients.map((c) => (
-                    <TouchableOpacity
-                      key={c.id}
-                      style={[
-                        styles.userChip,
-                        selectedClient?.id === c.id && styles.userChipActive,
-                      ]}
-                      onPress={() => setSelectedClient(c)}
-                    >
-                      <Text
+                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                  <View style={styles.clientsContainer}>
+                    {clients.map((client) => (
+                      <TouchableOpacity
+                        key={client.id}
                         style={[
-                          styles.chipText,
-                          selectedClient?.id === c.id && { color: "#000" },
+                          styles.clientButton,
+                          selectedClient?.id === client.id && styles.clientButtonActive
                         ]}
+                        onPress={() => setSelectedClient(client)}
                       >
-                        {c.full_name}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
+                        <Text style={[
+                          styles.clientButtonText,
+                          selectedClient?.id === client.id && styles.clientButtonTextActive
+                        ]}>
+                          {client.full_name}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </ScrollView>
               )}
+            </View>
 
-              {/* STEP 2: DETAILS */}
-              <View style={[styles.stepHeader, { marginTop: 30 }]}>
-                <Text style={styles.stepNum}>2</Text>
-                <Text style={styles.stepLabel}>Package & Method</Text>
-              </View>
-
-              <View style={styles.optionsRow}>
-                {["daily", "monthly", "trainer"].map((t) => (
+            {/* Subscription Tiers */}
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Package</Text>
+              <View style={styles.tierContainer}>
+                {["daily", "monthly", "trainer"].map((tier) => (
                   <TouchableOpacity
-                    key={t}
-                    style={styles.packageBtn}
-                    onPress={() => selectSubTier(t)}
+                    key={tier}
+                    style={styles.tierButton}
+                    onPress={() => selectSubTier(tier)}
                   >
-                    <Text style={styles.packageText}>{t.toUpperCase()}</Text>
+                    <Text style={styles.tierText}>{tier.toUpperCase()}</Text>
                   </TouchableOpacity>
                 ))}
               </View>
+            </View>
 
-              <View style={styles.methodRow}>
-                {["Cash", "EcoCash", "Swipe"].map((m) => (
+            {/* Payment Method */}
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Payment Method</Text>
+              <View style={styles.paymentContainer}>
+                {["Cash", "EcoCash", "Swipe"].map((method) => (
                   <TouchableOpacity
-                    key={m}
+                    key={method}
                     style={[
-                      styles.methodBtn,
-                      paymentMethod === m && styles.methodBtnActive,
+                      styles.paymentButton,
+                      paymentMethod === method && styles.paymentButtonActive
                     ]}
-                    onPress={() => setPaymentMethod(m)}
+                    onPress={() => setPaymentMethod(method)}
                   >
-                    <Text
-                      style={[
-                        styles.methodText,
-                        paymentMethod === m && { color: "#000" },
-                      ]}
-                    >
-                      {m}
+                    <Text style={[
+                      styles.paymentText,
+                      paymentMethod === method && styles.paymentTextActive
+                    ]}>
+                      {method}
                     </Text>
                   </TouchableOpacity>
                 ))}
               </View>
+            </View>
 
+            {/* Description */}
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Description</Text>
               <TextInput
-                style={[styles.darkInput, { marginTop: 15 }]}
-                placeholder="Description"
-                placeholderTextColor="#555"
+                style={styles.input}
+                placeholder="Sale description"
+                placeholderTextColor="#8a9a9f"
                 value={description}
                 onChangeText={setDescription}
               />
+            </View>
 
-              <View style={styles.priceRow}>
-                <View style={{ flex: 2 }}>
-                  <Text style={styles.miniLabel}>UNIT PRICE ($)</Text>
-                  <TextInput
-                    style={styles.darkInput}
-                    keyboardType="numeric"
-                    value={unitPrice}
-                    onChangeText={setUnitPrice}
-                  />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.miniLabel}>QTY</Text>
-                  <TextInput
-                    style={styles.darkInput}
-                    keyboardType="numeric"
-                    value={quantity}
-                    onChangeText={setQuantity}
-                  />
-                </View>
+            {/* Price and Quantity */}
+            <View style={styles.priceContainer}>
+              <View style={styles.priceInput}>
+                <Text style={styles.inputLabel}>Unit Price ($)</Text>
+                <TextInput
+                  style={styles.input}
+                  keyboardType="numeric"
+                  value={unitPrice}
+                  onChangeText={setUnitPrice}
+                />
               </View>
-
-              {/* FOOTER ACTION */}
-              <View style={styles.summaryCard}>
-                <Text style={styles.sumLabel}>Total Amount Due</Text>
-                <Text style={styles.sumValue}>${amountDue}</Text>
+              <View style={styles.priceInput}>
+                <Text style={styles.inputLabel}>Quantity</Text>
+                <TextInput
+                  style={styles.input}
+                  keyboardType="numeric"
+                  value={quantity}
+                  onChangeText={setQuantity}
+                />
               </View>
+            </View>
 
-              <TouchableOpacity
-                style={styles.mainSubmitBtn}
-                onPress={handleProcessSale}
-                disabled={loading}
-              >
-                {loading ? (
-                  <ActivityIndicator color="#000" />
-                ) : (
-                  <>
-                    <Ionicons
-                      name="print-outline"
-                      size={24}
-                      color="#000"
-                      style={{ marginRight: 10 }}
-                    />
-                    <Text style={styles.submitText}>FINALIZE & PRINT</Text>
-                  </>
-                )}
-              </TouchableOpacity>
-            </ScrollView>
-          </SafeAreaView>
-        </View>
+            {/* Total Amount */}
+            <View style={styles.totalContainer}>
+              <Text style={styles.totalLabel}>Total Amount</Text>
+              <Text style={styles.totalValue}>${amountDue}</Text>
+            </View>
+
+            {/* Submit Button */}
+            <TouchableOpacity
+              style={styles.submitButton}
+              onPress={handleProcessSale}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator color="#141f23" />
+              ) : (
+                <>
+                  <Ionicons name="print" size={20} color="#141f23" />
+                  <Text style={styles.submitText}>Process & Print Receipt</Text>
+                </>
+              )}
+            </TouchableOpacity>
+          </ScrollView>
+        </SafeAreaView>
       </Modal>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#090c0d" },
-  dashboardCard: {
-    margin: 20,
-    backgroundColor: "#141f23",
-    padding: 25,
-    borderRadius: 25,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    borderBottomWidth: 3,
-    borderBottomColor: "#FFD700",
-  },
-  dashLabel: {
-    color: "#8a9a9f",
-    fontSize: 12,
-    fontWeight: "bold",
-    letterSpacing: 2,
-  },
-  dashValue: { color: "#FFD700", fontSize: 44, fontWeight: "900" },
-  refreshBtn: { backgroundColor: "#1e2b2f", padding: 12, borderRadius: 15 },
-
-  content: { flex: 1, paddingHorizontal: 20 },
-  sectionTitle: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 15,
-    opacity: 0.8,
-  },
-  saleTile: {
-    backgroundColor: "#141f23",
-    padding: 16,
-    borderRadius: 20,
-    marginBottom: 12,
-    flexDirection: "row",
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-  },
-  indicator: { width: 4, height: 35, borderRadius: 2, marginRight: 15 },
-  clientName: { color: "#fff", fontWeight: "bold", fontSize: 16 },
-  saleDesc: { color: "#5a6a6f", fontSize: 12, marginTop: 2 },
-  salePrice: { color: "#FFD700", fontWeight: "bold", fontSize: 18 },
-  saleMethod: { color: "#4a5a5f", fontSize: 10, fontWeight: "bold" },
-
-  fab: {
-    position: "absolute",
-    bottom: 30,
-    right: 25,
-    backgroundColor: "#FFD700",
-    paddingVertical: 15,
-    paddingHorizontal: 25,
-    borderRadius: 30,
-    flexDirection: "row",
-    alignItems: "center",
-    elevation: 8,
-    shadowColor: "#FFD700",
-    shadowOpacity: 0.4,
-    shadowRadius: 10,
-  },
-  fabText: { fontWeight: "900", marginLeft: 8, fontSize: 16, letterSpacing: 1 },
-
-  fullModal: { flex: 1, backgroundColor: "#090c0d" },
-  modalHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: 25,
-    borderBottomWidth: 1,
-    borderBottomColor: "#141f23",
-  },
-  modalTitle: { color: "#FFD700", fontSize: 24, fontWeight: "900" },
-  stepHeader: { flexDirection: "row", alignItems: "center", marginBottom: 15 },
-  stepNum: {
-    backgroundColor: "#FFD700",
-    color: "#000",
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    textAlign: "center",
-    fontWeight: "bold",
-    marginRight: 10,
-    lineHeight: 24,
-  },
-  stepLabel: { color: "#fff", fontSize: 16, fontWeight: "bold", flex: 1 },
-  linkText: { color: "#FFD700", fontWeight: "bold" },
-
-  darkInput: {
-    backgroundColor: "#141f23",
-    padding: 18,
-    borderRadius: 15,
-    color: "#fff",
-    fontSize: 16,
-    marginTop: 5,
-  },
-  chipGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
-  userChip: {
-    backgroundColor: "#141f23",
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#1e2b2f",
-  },
-  userChipActive: { backgroundColor: "#FFD700", borderColor: "#FFD700" },
-  chipText: { color: "#8a9a9f", fontWeight: "bold" },
-
-  optionsRow: { flexDirection: "row", gap: 10, marginBottom: 15 },
-  packageBtn: {
+  container: {
     flex: 1,
-    borderWeight: 1,
-    borderColor: "#FFD700",
-    borderStyle: "dashed",
-    borderWidth: 1,
+    backgroundColor: '#141f23',
+  },
+  // Header
+  header: {
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 15,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  headerTitle: {
+    color: "#fff",
+    fontSize: 32,
+    fontWeight: "800",
+    letterSpacing: -0.5,
+  },
+  headerSubtitle: {
+    color: "#8a9a9f",
+    fontSize: 14,
+    marginTop: 4,
+    fontWeight: "500",
+  },
+  refreshButton: {
+    padding: 8,
+  },
+  // Revenue Section
+  revenueSection: {
+    paddingHorizontal: 20,
+    marginBottom: 20,
+  },
+  revenueLabel: {
+    fontSize: 14,
+    color: '#8a9a9f',
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  revenueValue: {
+    fontSize: 36,
+    fontWeight: 'bold',
+    color: '#59cb01',
+  },
+  // Content
+  content: {
+    flex: 1,
+    paddingHorizontal: 20,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#FFF',
+    marginBottom: 15,
+  },
+  // Sale Items
+  saleItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#1e2b2f',
+  },
+  saleInfo: {
+    flex: 1,
+  },
+  clientName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFF',
+    marginBottom: 4,
+  },
+  saleDescription: {
+    fontSize: 14,
+    color: '#8a9a9f',
+    marginBottom: 4,
+  },
+  saleMethod: {
+    fontSize: 12,
+    color: '#59cb01',
+    fontWeight: '500',
+  },
+  saleAmount: {
+    alignItems: 'flex-end',
+  },
+  salePrice: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#59cb01',
+    marginBottom: 4,
+  },
+  saleType: {
+    fontSize: 12,
+    color: '#8a9a9f',
+    textTransform: 'capitalize',
+  },
+  // Add Button
+  addButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#59cb01',
+    marginHorizontal: 20,
+    marginVertical: 20,
+    paddingVertical: 16,
+    borderRadius: 12,
+    gap: 8,
+  },
+  addButtonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#141f23',
+  },
+  // Empty State
+  emptyState: {
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#8a9a9f',
+    marginTop: 10,
+  },
+  // Modal
+  modalContainer: {
+    flex: 1,
+    backgroundColor: '#141f23',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#1e2b2f',
+  },
+  modalTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#FFF',
+  },
+  modalContent: {
+    padding: 20,
+  },
+  // Input Groups
+  inputGroup: {
+    marginBottom: 20,
+  },
+  inputLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFF',
+    marginBottom: 8,
+  },
+  input: {
+    backgroundColor: '#1e2b2f',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 16,
+    color: '#FFF',
+  },
+  // Toggle Button
+  toggleButton: {
+    backgroundColor: 'rgba(89, 203, 1, 0.1)',
     padding: 12,
     borderRadius: 12,
-    alignItems: "center",
+    marginBottom: 12,
+    alignItems: 'center',
   },
-  packageText: { color: "#FFD700", fontSize: 10, fontWeight: "bold" },
-
-  methodRow: { flexDirection: "row", gap: 10 },
-  methodBtn: {
-    flex: 1,
-    backgroundColor: "#141f23",
-    padding: 15,
-    borderRadius: 12,
-    alignItems: "center",
+  toggleText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#59cb01',
   },
-  methodBtnActive: { backgroundColor: "#FFD700" },
-  methodText: { color: "#8a9a9f", fontWeight: "bold" },
-
-  priceRow: { flexDirection: "row", gap: 15, marginTop: 20 },
-  miniLabel: {
-    color: "#4a5a5f",
-    fontSize: 10,
-    fontWeight: "bold",
-    marginBottom: 5,
+  // Clients Container
+  clientsContainer: {
+    flexDirection: 'row',
+    gap: 8,
   },
-
-  summaryCard: {
-    backgroundColor: "#FFD70010",
-    padding: 25,
-    borderRadius: 25,
-    marginTop: 30,
-    alignItems: "center",
-    borderStyle: "dashed",
-    borderWidth: 1,
-    borderColor: "#FFD70050",
-  },
-  sumLabel: { color: "#FFD700", fontSize: 12, fontWeight: "bold" },
-  sumValue: { color: "#FFD700", fontSize: 40, fontWeight: "900" },
-
-  mainSubmitBtn: {
-    backgroundColor: "#FFD700",
-    padding: 22,
+  clientButton: {
+    backgroundColor: '#1e2b2f',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
     borderRadius: 20,
-    alignItems: "center",
-    marginTop: 25,
-    flexDirection: "row",
-    justifyContent: "center",
   },
-  submitText: { fontWeight: "900", fontSize: 18, letterSpacing: 1 },
-  emptyState: { alignItems: "center", marginTop: 100, opacity: 0.3 },
-  emptyText: { color: "#fff", marginTop: 10 },
+  clientButtonActive: {
+    backgroundColor: '#59cb01',
+  },
+  clientButtonText: {
+    fontSize: 14,
+    color: '#8a9a9f',
+    fontWeight: '600',
+  },
+  clientButtonTextActive: {
+    color: '#141f23',
+  },
+  // Tier Container
+  tierContainer: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  tierButton: {
+    flex: 1,
+    backgroundColor: '#1e2b2f',
+    padding: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  tierText: {
+    fontSize: 12,
+    color: '#59cb01',
+    fontWeight: '600',
+  },
+  // Payment Container
+  paymentContainer: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  paymentButton: {
+    flex: 1,
+    backgroundColor: '#1e2b2f',
+    padding: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  paymentButtonActive: {
+    backgroundColor: '#59cb01',
+  },
+  paymentText: {
+    fontSize: 14,
+    color: '#8a9a9f',
+    fontWeight: '600',
+  },
+  paymentTextActive: {
+    color: '#141f23',
+  },
+  // Price Container
+  priceContainer: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  priceInput: {
+    flex: 1,
+  },
+  // Total Container
+  totalContainer: {
+    backgroundColor: 'rgba(89, 203, 1, 0.1)',
+    padding: 20,
+    borderRadius: 16,
+    alignItems: 'center',
+    marginVertical: 20,
+  },
+  totalLabel: {
+    fontSize: 14,
+    color: '#59cb01',
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  totalValue: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#59cb01',
+  },
+  // Submit Button
+  submitButton: {
+    backgroundColor: '#59cb01',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+    borderRadius: 12,
+    gap: 10,
+  },
+  submitText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#141f23',
+  },
 });
 
 export default StaffSalesScreen;
